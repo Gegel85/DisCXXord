@@ -1,0 +1,10 @@
+*.o
+*.dll
+*.a
+*.log
+.idea
+cmake-build-*
+CMakeLists.txt
+a.exe
+a.out
+token.hpp
