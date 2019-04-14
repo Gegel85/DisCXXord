@@ -88,9 +88,9 @@ namespace DisCXXord {
 	{
 		if (this->_logLevel <= INFO) {
 			this->setTextColor(BLUE);
-			std::cout << "[INFO]: ";
+			std::cout << "[INFO]";
 			this->setTextColor(WHITE);
-			std::cout << msg << std::endl;
+			std::cout << ": " << msg << std::endl;
 			this->_file << "[INFO]: " << msg << std::endl;
 		}
 	}
@@ -99,9 +99,9 @@ namespace DisCXXord {
 	{
 		if (this->_logLevel <= WARNING) {
 			this->setTextColor(YELLOW);
-			std::cout << "[WARNING]: ";
+			std::cout << "[WARNING]";
 			this->setTextColor(WHITE);
-			std::cout << msg << std::endl;
+			std::cout << ": " << msg << std::endl;
 			this->_file << "[WARNING]: " << msg << std::endl;
 		}
 	}
@@ -110,9 +110,9 @@ namespace DisCXXord {
 	{
 		if (this->_logLevel <= ERR) {
 			this->setTextColor(DARK_RED);
-			std::cout << "[ERROR]: ";
+			std::cout << "[ERROR]";
 			this->setTextColor(WHITE);
-			std::cout << msg << std::endl;
+			std::cout << ": " << msg << std::endl;
 			this->_file << "[ERROR]: " << msg << std::endl;
 		}
 	}
@@ -121,9 +121,9 @@ namespace DisCXXord {
 	{
 		if (this->_logLevel <= CRITICAL) {
 			this->setTextColor(RED);
-			std::cout << "[FATAL]: ";
+			std::cout << "[FATAL]";
 			this->setTextColor(WHITE);
-			std::cout << msg << std::endl;
+			std::cout << ": " << msg << std::endl;
 			this->_file << "[FATAL]: " << msg << std::endl;
 		}
 	}
