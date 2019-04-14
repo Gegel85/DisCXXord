@@ -2,6 +2,7 @@
 // Created by Gegel85 on 06/04/2019.
 //
 
+#include <cstring>
 #include <sstream>
 #include <iostream>
 #include "SecuredWebSocket.hpp"

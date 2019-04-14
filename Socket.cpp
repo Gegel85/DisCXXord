@@ -2,9 +2,18 @@
 // Created by Gegel85 on 05/04/2019.
 //
 
-#include <unistd.h>
+#include <cstring>
 #include <sstream>
+#include <unistd.h>
 #include "Socket.hpp"
+#include "platform.hpp"
+
+#ifndef _WINDOWS_DISCXXORD
+#	include <netdb.h>
+#	include <arpa/inet.h>
+#	include <sys/select.h>
+	typedef fd_set FD_SET;
+#endif
 
 #include <iostream>
 namespace DisCXXord

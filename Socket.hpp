@@ -6,11 +6,12 @@
 #define DISC_ORD_SOCKET_HPP
 
 
-#if defined _WIN32 || defined __WIN32 || defined __WIN32__
+#if defined _WIN32
 #	include <winsock.h>
 #else
 #	include <sys/socket.h>
-typedef SOCKET int;
+#	define INVALID_SOCKET -1
+	typedef int SOCKET;
 #endif
 #include <string>
 #include <map>
