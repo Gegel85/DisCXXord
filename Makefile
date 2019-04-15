@@ -43,5 +43,8 @@ clean:
 fclean:	clean
 		$(MAKE) -C lib/json_parser fclean
 
-dbg:	CXXFLAGS += -g -O0
-dbg:	clean windows
+dbgw:	CXXFLAGS += -g -O0
+dbgw:	clean windows
+
+dbgl:	CXXFLAGS += -g -O0
+dbgl:	clean linux

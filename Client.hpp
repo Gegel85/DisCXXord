@@ -28,6 +28,22 @@ namespace DisCXXord {
 		void run(const std::string &token);
 
 	private:
+		class Exception : public std::exception {
+		private:
+			std::string	_msg;
+		public:
+			explicit Exception(const std::string &msg) : _msg(msg) {};
+			const char *what() const noexcept override { return this->_msg.c_str(); };
+		};
+
+		class TimeoutException : public Exception {
+		public:
+			explicit TimeoutException(const std::string &msg) : Exception(msg) {};
+		};
+
+		std::optional<std::string> timedGetAnswer(int time);
+		void _connect();
+		void _heartbeatLoop();
 		void _handleWebSocket();
 		void _identify();
 		void _heartbeat(bool waitAnswer = false);
@@ -35,74 +51,74 @@ namespace DisCXXord {
 		void _handlePayload(JsonObject &);
 
 		//Events functions
-		void _ready(JsonObject &val);
-		void _resumed(JsonObject &val);
-		void _channelCreate(JsonObject &val);
-		void _channelUpdate(JsonObject &val);
-		void _channelDelete(JsonObject &val);
-		void _channelPinsUpdate(JsonObject &val);
-		void _guildCreate(JsonObject &val);
-		void _guildUpdate(JsonObject &val);
-		void _guildDelete(JsonObject &val);
-		void _guildBanAdd(JsonObject &val);
-		void _guildBanRemove(JsonObject &val);
-		void _guildEmojisUpdate(JsonObject &val);
-		void _guildIntegrationsUpdate(JsonObject &val);
-		void _guildMemberAdd(JsonObject &val);
-		void _guildMemberRemove(JsonObject &val);
-		void _guildMemberUpdate(JsonObject &val);
-		void _guildMembersChunk(JsonObject &val);
-		void _guildRoleCreate(JsonObject &val);
-		void _guildRoleUpdate(JsonObject &val);
-		void _guildRoleDelete(JsonObject &val);
-		void _messageCreate(JsonObject &val);
-		void _messageUpdate(JsonObject &val);
-		void _messageDelete(JsonObject &val);
-		void _messageDeleteBulk(JsonObject &val);
-		void _messageReactionAdd(JsonObject &val);
-		void _messageReactionRemove(JsonObject &val);
-		void _messageReactionRemoveAll(JsonObject &val);
-		void _presenceUpdate(JsonObject &val);
-		void _typingStart(JsonObject &val);
-		void _userUpdate(JsonObject &val);
-		void _voiceStateUpdate(JsonObject &val);
-		void _voiceServerUpdate(JsonObject &val);
-		void _webhooksUpdate(JsonObject &val);
+		void _ready(JsonValue &val);
+		void _resumed(JsonValue &val);
+		void _channelCreate(JsonValue &val);
+		void _channelUpdate(JsonValue &val);
+		void _channelDelete(JsonValue &val);
+		void _channelPinsUpdate(JsonValue &val);
+		void _guildCreate(JsonValue &val);
+		void _guildUpdate(JsonValue &val);
+		void _guildDelete(JsonValue &val);
+		void _guildBanAdd(JsonValue &val);
+		void _guildBanRemove(JsonValue &val);
+		void _guildEmojisUpdate(JsonValue &val);
+		void _guildIntegrationsUpdate(JsonValue &val);
+		void _guildMemberAdd(JsonValue &val);
+		void _guildMemberRemove(JsonValue &val);
+		void _guildMemberUpdate(JsonValue &val);
+		void _guildMembersChunk(JsonValue &val);
+		void _guildRoleCreate(JsonValue &val);
+		void _guildRoleUpdate(JsonValue &val);
+		void _guildRoleDelete(JsonValue &val);
+		void _messageCreate(JsonValue &val);
+		void _messageUpdate(JsonValue &val);
+		void _messageDelete(JsonValue &val);
+		void _messageDeleteBulk(JsonValue &val);
+		void _messageReactionAdd(JsonValue &val);
+		void _messageReactionRemove(JsonValue &val);
+		void _messageReactionRemoveAll(JsonValue &val);
+		void _presenceUpdate(JsonValue &val);
+		void _typingStart(JsonValue &val);
+		void _userUpdate(JsonValue &val);
+		void _voiceStateUpdate(JsonValue &val);
+		void _voiceServerUpdate(JsonValue &val);
+		void _webhooksUpdate(JsonValue &val);
 
-		std::map<std::string, std::function<void(JsonObject &)>> _dispatchEvents = {
-			{"READY",			[this](JsonObject &val) { this->_ready(val); }},
-			{"RESUMED",			[this](JsonObject &val) { this->_resumed(val); }},
-			{"CHANNEL_CREATE",		[this](JsonObject &val) { this->_channelCreate(val); }},
-			{"CHANNEL_UPDATE",		[this](JsonObject &val) { this->_channelUpdate(val); }},
-			{"CHANNEL_DELETE",		[this](JsonObject &val) { this->_channelDelete(val); }},
-			{"CHANNEL_PINS_UPDATE",		[this](JsonObject &val) { this->_channelPinsUpdate(val); }},
-			{"GUILD_CREATE",		[this](JsonObject &val) { this->_guildCreate(val); }},
-			{"GUILD_UPDATE",		[this](JsonObject &val) { this->_guildUpdate(val); }},
-			{"GUILD_DELETE",		[this](JsonObject &val) { this->_guildDelete(val); }},
-			{"GUILD_BAN_ADD",		[this](JsonObject &val) { this->_guildBanAdd(val); }},
-			{"GUILD_BAN_REMOVE",		[this](JsonObject &val) { this->_guildBanRemove(val); }},
-			{"GUILD_EMOJIS_UPDATE",		[this](JsonObject &val) { this->_guildEmojisUpdate(val); }},
-			{"GUILD_INTEGRATIONS_UPDATE",	[this](JsonObject &val) { this->_guildIntegrationsUpdate(val); }},
-			{"GUILD_MEMBER_ADD",		[this](JsonObject &val) { this->_guildMemberAdd(val); }},
-			{"GUILD_MEMBER_REMOVE",		[this](JsonObject &val) { this->_guildMemberRemove(val); }},
-			{"GUILD_MEMBER_UPDATE",		[this](JsonObject &val) { this->_guildMemberUpdate(val); }},
-			{"GUILD_MEMBERS_CHUNK",		[this](JsonObject &val) { this->_guildMembersChunk(val); }},
-			{"GUILD_ROLE_CREATE",		[this](JsonObject &val) { this->_guildRoleCreate(val); }},
-			{"GUILD_ROLE_UPDATE",		[this](JsonObject &val) { this->_guildRoleUpdate(val); }},
-			{"GUILD_ROLE_DELETE",		[this](JsonObject &val) { this->_guildRoleDelete(val); }},
-			{"MESSAGE_CREATE",		[this](JsonObject &val) { this->_messageCreate(val); }},
-			{"MESSAGE_UPDATE",		[this](JsonObject &val) { this->_messageUpdate(val); }},
-			{"MESSAGE_DELETE",		[this](JsonObject &val) { this->_messageDelete(val); }},
-			{"MESSAGE_DELETE_BULK",		[this](JsonObject &val) { this->_messageDeleteBulk(val); }},
-			{"MESSAGE_REACTION_ADD",	[this](JsonObject &val) { this->_messageReactionAdd(val); }},
-			{"MESSAGE_REACTION_REMOVE",	[this](JsonObject &val) { this->_messageReactionRemove(val); }},
-			{"MESSAGE_REACTION_REMOVE_ALL",	[this](JsonObject &val) { this->_messageReactionRemoveAll(val); }},
-			{"PRESENCE_UPDATE",		[this](JsonObject &val) { this->_presenceUpdate(val); }},
-			{"TYPING_START",		[this](JsonObject &val) { this->_typingStart(val); }},
-			{"USER_UPDATE",			[this](JsonObject &val) { this->_userUpdate(val); }},
-			{"VOICE_STATE_UPDATE",		[this](JsonObject &val) { this->_voiceStateUpdate(val); }},
-			{"VOICE_SERVER_UPDATE",		[this](JsonObject &val) { this->_voiceServerUpdate(val); }},
-			{"WEBHOOKS_UPDATE",		[this](JsonObject &val) { this->_webhooksUpdate(val); }},
+		std::map<std::string, std::function<void(JsonValue &)>> _dispatchEvents = {
+			{"READY",			[this](JsonValue &val) { this->_ready(val); }},
+			{"RESUMED",			[this](JsonValue &val) { this->_resumed(val); }},
+			{"CHANNEL_CREATE",		[this](JsonValue &val) { this->_channelCreate(val); }},
+			{"CHANNEL_UPDATE",		[this](JsonValue &val) { this->_channelUpdate(val); }},
+			{"CHANNEL_DELETE",		[this](JsonValue &val) { this->_channelDelete(val); }},
+			{"CHANNEL_PINS_UPDATE",		[this](JsonValue &val) { this->_channelPinsUpdate(val); }},
+			{"GUILD_CREATE",		[this](JsonValue &val) { this->_guildCreate(val); }},
+			{"GUILD_UPDATE",		[this](JsonValue &val) { this->_guildUpdate(val); }},
+			{"GUILD_DELETE",		[this](JsonValue &val) { this->_guildDelete(val); }},
+			{"GUILD_BAN_ADD",		[this](JsonValue &val) { this->_guildBanAdd(val); }},
+			{"GUILD_BAN_REMOVE",		[this](JsonValue &val) { this->_guildBanRemove(val); }},
+			{"GUILD_EMOJIS_UPDATE",		[this](JsonValue &val) { this->_guildEmojisUpdate(val); }},
+			{"GUILD_INTEGRATIONS_UPDATE",	[this](JsonValue &val) { this->_guildIntegrationsUpdate(val); }},
+			{"GUILD_MEMBER_ADD",		[this](JsonValue &val) { this->_guildMemberAdd(val); }},
+			{"GUILD_MEMBER_REMOVE",		[this](JsonValue &val) { this->_guildMemberRemove(val); }},
+			{"GUILD_MEMBER_UPDATE",		[this](JsonValue &val) { this->_guildMemberUpdate(val); }},
+			{"GUILD_MEMBERS_CHUNK",		[this](JsonValue &val) { this->_guildMembersChunk(val); }},
+			{"GUILD_ROLE_CREATE",		[this](JsonValue &val) { this->_guildRoleCreate(val); }},
+			{"GUILD_ROLE_UPDATE",		[this](JsonValue &val) { this->_guildRoleUpdate(val); }},
+			{"GUILD_ROLE_DELETE",		[this](JsonValue &val) { this->_guildRoleDelete(val); }},
+			{"MESSAGE_CREATE",		[this](JsonValue &val) { this->_messageCreate(val); }},
+			{"MESSAGE_UPDATE",		[this](JsonValue &val) { this->_messageUpdate(val); }},
+			{"MESSAGE_DELETE",		[this](JsonValue &val) { this->_messageDelete(val); }},
+			{"MESSAGE_DELETE_BULK",		[this](JsonValue &val) { this->_messageDeleteBulk(val); }},
+			{"MESSAGE_REACTION_ADD",	[this](JsonValue &val) { this->_messageReactionAdd(val); }},
+			{"MESSAGE_REACTION_REMOVE",	[this](JsonValue &val) { this->_messageReactionRemove(val); }},
+			{"MESSAGE_REACTION_REMOVE_ALL",	[this](JsonValue &val) { this->_messageReactionRemoveAll(val); }},
+			{"PRESENCE_UPDATE",		[this](JsonValue &val) { this->_presenceUpdate(val); }},
+			{"TYPING_START",		[this](JsonValue &val) { this->_typingStart(val); }},
+			{"USER_UPDATE",			[this](JsonValue &val) { this->_userUpdate(val); }},
+			{"VOICE_STATE_UPDATE",		[this](JsonValue &val) { this->_voiceStateUpdate(val); }},
+			{"VOICE_SERVER_UPDATE",		[this](JsonValue &val) { this->_voiceServerUpdate(val); }},
+			{"WEBHOOKS_UPDATE",		[this](JsonValue &val) { this->_webhooksUpdate(val); }},
 		};
 
 		struct HeartbeatInfos {

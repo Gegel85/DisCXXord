@@ -16,11 +16,13 @@ namespace DisCXXord
 		SSL_load_error_strings();
 		SSL_library_init ();
 		this->_ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+		this->_connection = nullptr;
 	}
 
 	SecuredSocket::~SecuredSocket()
 	{
-		SSL_shutdown(this->_connection);
+		if (this->_connection)
+			SSL_shutdown(this->_connection);
 	}
 
 	void	SecuredSocket::connect(unsigned int ip, unsigned short portno)
