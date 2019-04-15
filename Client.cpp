@@ -178,6 +178,7 @@ namespace DisCXXord {
 
 	void Client::_heartbeatLoop()
 	{
+		this->_hbInfos._isAcknoledged = true;
 		for (int i = 0; this->_webSocket.isOpen() && i < this->_hbInfos._heartbeatInterval; i += 1000) {
 			if (this->_hbInfos._heartbeatInterval - i < 1000)
 				std::this_thread::sleep_for(std::chrono::milliseconds(this->_hbInfos._heartbeatInterval - i));
@@ -230,7 +231,8 @@ namespace DisCXXord {
 
 	void Client::_ready(JsonValue &val)
 	{
-
+		this->_me = User(val.to<JsonObject>()["user"]->to<JsonObject>());
+		this->_logger.info("Connected on " + this->_me->tag());
 	}
 
 	void Client::_resumed(JsonValue &val)

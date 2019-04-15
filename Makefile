@@ -9,6 +9,7 @@ SRC =	SecuredSocket.cpp	\
 		Socket.cpp			\
 		Logger.cpp			\
 		Client.cpp			\
+		User.cpp			\
 
 OBJ =	$(SRC:%.cpp=%.o)
 

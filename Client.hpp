@@ -12,6 +12,7 @@
 #include <JsonObject.hpp>
 #include "SecuredWebSocket.hpp"
 #include "Logger.hpp"
+#include "User.hpp"
 
 namespace DisCXXord {
 	class Client {
@@ -49,6 +50,8 @@ namespace DisCXXord {
 		void _heartbeat(bool waitAnswer = false);
 		void _treatWebSocketPayloads();
 		void _handlePayload(JsonObject &);
+
+		std::optional<User> _me;
 
 		//Events functions
 		void _ready(JsonValue &val);
