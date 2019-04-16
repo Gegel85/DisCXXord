@@ -7,7 +7,7 @@ namespace DisCXXord
 	Snowflake::Snowflake(Client &client, JsonObject &obj) :
 		_parent(client),
 		_id(obj["id"]->to<JsonString>().value()),
-		_createdAt((std::stol(this->_id) >> 22) + 1420070400000)
+		_createdAt((std::stoll(this->_id) >> 22) + 1420070400000)
 	{
 	}
 

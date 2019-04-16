@@ -9,9 +9,11 @@
 
 namespace DisCXXord
 {
-	Date::Date(time_t time) :
-		_timestamp(*gmtime(&time))
-	{}
+	Date::Date(time_t time)
+	{
+		time /= 1000;
+		this->_timestamp = *gmtime(&time);
+	}
 
 	Date::Date(std::string time)
 	{
