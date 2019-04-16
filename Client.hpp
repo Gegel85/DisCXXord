@@ -112,6 +112,7 @@ namespace DisCXXord
 			{"VOICE_STATE_UPDATE",		[this](JsonValue &val) { this->_voiceStateUpdate(val); }},
 			{"VOICE_SERVER_UPDATE",		[this](JsonValue &val) { this->_voiceServerUpdate(val); }},
 			{"WEBHOOKS_UPDATE",		[this](JsonValue &val) { this->_webhooksUpdate(val); }},
+			{"PRESENCES_REPLACE",		[] (JsonValue &) {}}
 		};
 
 		struct HeartbeatInfos {
