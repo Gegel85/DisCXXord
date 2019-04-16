@@ -30,13 +30,13 @@ help:
 lib/json_parser/libjson_parser_cpp.a:
 	$(MAKE) -C lib/json_parser PIC
 
-$(STATICNAME):	$(OBJ) lib/json_parser/libjson_parser_cpp.a
+$(STATICNAME):	lib/json_parser/libjson_parser_cpp.a $(OBJ)
 		$(AR) rc $(STATICNAME) $(OBJ)
 
-$(WINSONAME):	$(OBJ) lib/json_parser/libjson_parser_cpp.a
+$(WINSONAME):	lib/json_parser/libjson_parser_cpp.a $(OBJ)
 		$(CXX) -o $(WINSONAME) $(OBJ) -shared $(LD_FLAGS) -lws2_32
 
-$(LINSONAME):	$(OBJ) lib/json_parser/libjson_parser_cpp.a
+$(LINSONAME):	lib/json_parser/libjson_parser_cpp.a $(OBJ)
 		$(CXX) -o $(LINSONAME) $(OBJ) -shared $(LD_FLAGS)
 
 windows:	$(STATICNAME) $(WINSONAME)
