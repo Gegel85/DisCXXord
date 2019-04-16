@@ -8,9 +8,8 @@
 
 namespace DisCXXord
 {
-	User::User(JsonObject &obj)
+	User::User(Client &client, JsonObject &obj) : Snowflake(client, obj)
 	{
-		this->_id = obj["id"]->to<JsonString>().value();
 		this->_username = obj["username"]->to<JsonString>().value();
 		this->_discriminator = obj["discriminator"]->to<JsonString>().value();
 
@@ -28,15 +27,11 @@ namespace DisCXXord
 
 		try {
 			this->_verified = obj["verified"]->to<JsonBoolean>().value();
-		} catch (std::out_of_range &) {
-			this->_verified = {};
-		}
+		} catch (std::out_of_range &) {}
 
 		try {
 			this->_premium_type = obj["premium_type"]->to<JsonNumber>().value();
-		} catch (std::out_of_range &) {
-			this->_premium_type = {};
-		}
+		} catch (std::out_of_range &) {}
 
 		try {
 			this->_flags = obj["flags"]->to<JsonNumber>().value();
@@ -46,124 +41,99 @@ namespace DisCXXord
 
 		try {
 			this->_email = obj["email"]->to<JsonString>().value();
-		} catch (std::out_of_range &) {
-			this->_email = {};
-		}
+		} catch (std::out_of_range &) {}
 
 		try {
 			this->_locale = obj["locale"]->to<JsonString>().value();
-		} catch (std::out_of_range &) {
-			this->_locale = {};
-		}
+		} catch (std::out_of_range &) {}
 
-		if (obj["avatar"]->is<JsonNull>())
-			this->_avatarHash = {};
-		else
+		if (!obj["avatar"]->is<JsonNull>())
 			this->_avatarHash = obj["avatar"]->to<JsonString>().value();
 	}
 
-	time_t User::createdAt()
-	{
-		return (std::stol(this->_id) >> 22) + 1420070400000;
-	}
-
-	std::string User::discriminator()
+	std::string User::discriminator() const
 	{
 		return this->_discriminator;
 	}
 
-	int User::defaultAvatar()
+	int User::defaultAvatar() const
 	{
 		return std::stoi(this->_discriminator) % 5;
 	}
 
-	bool User::bot()
+	bool User::bot() const
 	{
 		return this->_bot;
 	}
 
-	std::string User::id()
-	{
-		return this->_id;
-	}
-
-	std::string User::tag()
+	std::string User::tag() const
 	{
 		return this->_username + "#" + this->_discriminator;
 	}
 
-	std::string User::username()
+	std::string User::username() const
 	{
 		return this->_username;
 	}
 
-	std::string User::avatarURL()
+	std::string User::avatarURL() const
 	{
 		if (this->_avatarHash)
 			return getAvatarURL();
 		return defaultAvatarURL();
 	}
 
-	std::string User::timestamp()
-	{
-		char buffer[22];
-		time_t time = this->createdAt();
-
-		strftime(buffer, sizeof buffer, "%Y-%m-%dT%H:%M:%SZ", gmtime(&time));
-		return buffer;
-	}
-
-	std::string User::mentionString()
+	std::string User::mentionString() const
 	{
 		return "<@" + this->_id + ">";
 	}
 
-	std::string User::defaultAvatarURL()
+	std::string User::defaultAvatarURL() const
 	{
 		return this->getDefaultAvatarURL();
 	}
 
-	std::optional<bool> User::verified()
+	std::optional<bool> User::verified() const
 	{
 		return this->_verified;
 	}
 
-	std::optional<int> User::premium_type()
+	std::optional<int> User::premium_type() const
 	{
 		return this->_premium_type;
 	}
 
-	std::optional<std::string> User::email()
+	std::optional<std::string> User::email() const
 	{
 		return this->_email;
 	}
 
-	std::optional<std::string> User::locale()
+	std::optional<std::string> User::locale() const
 	{
 		return this->_locale;
 	}
 
-	std::optional<std::string> User::avatar()
+	std::optional<std::string> User::avatar() const
 	{
 		return this->_avatarHash;
 	}
 
-	std::string User::getDefaultAvatarURL(int size)
+	std::string User::getDefaultAvatarURL(int size) const
 	{
 		return IMAGE_ENDPOINT + ("embed/avatars/" + std::to_string(this->defaultAvatar())) + ".png?size=" + std::to_string(size);
 	}
 
-	std::string User::getAvatarURL(int size, const std::string &format)
+	std::string User::getAvatarURL(int size, const std::string &format) const
 	{
 		return IMAGE_ENDPOINT + ("avatars/" + this->_id) + "/" + *this->_avatarHash + "." + format + "?size=" + std::to_string(size);
 	}
 
-	bool User::mfaEnabled()
+	bool User::mfaEnabled() const
 	{
 		return this->_mfaEnabled;
 	}
 
-	int User::flags()
+	int User::flags() const
 	{
 		return this->_flags;
 	}

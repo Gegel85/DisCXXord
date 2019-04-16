@@ -13,36 +13,28 @@
 #include "SecuredWebSocket.hpp"
 #include "Logger.hpp"
 #include "User.hpp"
+#include "Guild.hpp"
 
-namespace DisCXXord {
+namespace DisCXXord
+{
 	class Client {
 	public:
 		struct clientHandlers {
-			void (*onready)();
+			void (*onready)(Client &);
 		};
 
-		Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::WARNING);
+		explicit Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::WARNING);
 		~Client();
+		const User &me();
+		const User &getUser(const std::string &id);
 		void setHandlers(clientHandlers handl);
 		void disconnect();
 		void run(const std::string &username, const std::string &password);
 		void run(const std::string &token);
+		User &makeUser(JsonObject &obj);
 
 	private:
-		class Exception : public std::exception {
-		private:
-			std::string	_msg;
-		public:
-			explicit Exception(const std::string &msg) : _msg(msg) {};
-			const char *what() const noexcept override { return this->_msg.c_str(); };
-		};
-
-		class TimeoutException : public Exception {
-		public:
-			explicit TimeoutException(const std::string &msg) : Exception(msg) {};
-		};
-
-		std::optional<std::string> timedGetAnswer(int time);
+		std::optional<std::string> _timedGetAnswer(int time);
 		void _connect();
 		void _heartbeatLoop();
 		void _handleWebSocket();
@@ -50,8 +42,6 @@ namespace DisCXXord {
 		void _heartbeat(bool waitAnswer = false);
 		void _treatWebSocketPayloads();
 		void _handlePayload(JsonObject &);
-
-		std::optional<User> _me;
 
 		//Events functions
 		void _ready(JsonValue &val);
@@ -133,6 +123,9 @@ namespace DisCXXord {
 			int						_nbNotAcknoledge;
 		};
 
+		std::optional<User>	_me;
+		std::vector<User>	_cachedUsers;
+		std::vector<Guild>	_cachedGuilds;
 		std::string 		_token;
 		SecuredWebSocket	_webSocket;
 		SecuredSocket		_httpSocket;

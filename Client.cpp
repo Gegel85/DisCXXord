@@ -5,6 +5,7 @@
 #include <string>
 #include <JsonParser.hpp>
 #include "defines.hpp"
+#include "Exception.hpp"
 #include "Client.hpp"
 
 #ifndef _WINDOWS_DISCXXORD
@@ -26,8 +27,9 @@ std::string getLastExceptionName()
 
 #endif
 
-namespace DisCXXord {
-
+namespace DisCXXord
+{
+//Public
 	Client::Client(const std::string &logpath, DisCXXord::Logger::LogLevel level) :
 		_handlers(),
 		_logger(logpath, level)
@@ -40,6 +42,78 @@ namespace DisCXXord {
 			this->_webSocket.disconnect();
 	}
 
+	void Client::disconnect()
+	{
+		this->_logger.info("Disconnecting...");
+		this->_webSocket.disconnect();
+		this->_disconnected = true;
+	}
+
+	void Client::run(const std::string &token)
+	{
+		this->_token = token;
+		try {
+			this->_connect();
+			this->_handleWebSocket();
+		} catch (std::exception &e) {
+			#ifdef __GNUG__
+			this->_logger.critical("Caught exception: " + getLastExceptionName());
+			#endif
+			this->_logger.critical(e.what());
+			this->_disconnected = true;
+		}
+		if (this->_hbInfos._heartbeatThread.joinable())
+			this->_hbInfos._heartbeatThread.join();
+	}
+
+	void Client::run(const std::string &username, const std::string &password)
+	{
+		(void)username;
+		(void)password;
+	}
+
+	void Client::setHandlers(DisCXXord::Client::clientHandlers handl)
+	{
+		this->_handlers = handl;
+	}
+
+	const User &Client::me()
+	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
+		return *this->_me;
+	}
+
+	const User &Client::getUser(const std::string &id)
+	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
+		for (const User &user : this->_cachedUsers)
+			if (user.id() == id)
+				return user;
+		throw UserNotFoundException("Cannot find user " + id);
+	}
+
+	User &Client::makeUser(JsonObject &obj)
+	{
+		try {
+			std::string id = obj["id"]->to<JsonString>().value();
+
+			for (User &user : this->_cachedUsers)
+				if (user.id() == id)
+					return user;
+			throw UserNotFoundException(id);
+		} catch (UserNotFoundException &) {
+			User user(*this, obj);
+
+			this->_cachedUsers.emplace_back(user);
+			return this->_cachedUsers.back();
+		}
+	}
+
+
+
+//Private
 	void Client::_heartbeat(bool waitAnswer)
 	{
 		std::string	payload = "{"
@@ -47,9 +121,8 @@ namespace DisCXXord {
 			"\"d\": " + (this->_hbInfos._lastSValue ? std::to_string(*this->_hbInfos._lastSValue) : "null") +
 		"}";
 
-		if (!this->_hbInfos._isAcknoledged) {
+		if (!this->_hbInfos._isAcknoledged)
 			this->_logger.warning("Server didn't acknowledged previous heartbeat");
-		}
 		this->_logger.debug("Sending heartbeat");
 		this->_webSocket.send(payload);
 		this->_hbInfos._lastHeartbeat = std::chrono::system_clock::now();
@@ -71,13 +144,6 @@ namespace DisCXXord {
 		"}";
 
 		this->_webSocket.send(payload);
-	}
-
-	void Client::disconnect()
-	{
-		this->_logger.info("Disconnecting...");
-		this->_webSocket.disconnect();
-		this->_disconnected = true;
 	}
 
 	void Client::_handlePayload(JsonObject &object)
@@ -113,6 +179,7 @@ namespace DisCXXord {
 			while (!this->_disconnected && timestruct.tv_sec) {
 				this->_logger.debug("Reading server answer");
 				std::string str = this->_webSocket.getAnswer();
+				this->_logger.debug(str);
 				auto val = JsonParser::parseString(str);
 				auto &object = val->to<JsonObject>();
 
@@ -123,7 +190,7 @@ namespace DisCXXord {
 		}
 	}
 
-	std::optional<std::string> Client::timedGetAnswer(int time)
+	std::optional<std::string> Client::_timedGetAnswer(int time)
 	{
 		FD_SET	set;
 		struct timeval	timestruct = {time, 0};
@@ -157,7 +224,7 @@ namespace DisCXXord {
 
 		this->_logger.debug("Waiting HELLO payload");
 
-		std::optional<std::string> answer = this->timedGetAnswer(30);
+		std::optional<std::string> answer = this->_timedGetAnswer(30);
 
 		if (!answer)
 			throw TimeoutException("Gateway didn't reply to the identify request");
@@ -179,15 +246,15 @@ namespace DisCXXord {
 	void Client::_heartbeatLoop()
 	{
 		this->_hbInfos._isAcknoledged = true;
-		for (int i = 0; this->_webSocket.isOpen() && i < this->_hbInfos._heartbeatInterval; i += 1000) {
+		for (size_t i = 0; !this->_disconnected && this->_webSocket.isOpen() && i < this->_hbInfos._heartbeatInterval; i += 1000) {
 			if (this->_hbInfos._heartbeatInterval - i < 1000)
 				std::this_thread::sleep_for(std::chrono::milliseconds(this->_hbInfos._heartbeatInterval - i));
 			else
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
-		while (this->_webSocket.isOpen()) {
+		while (!this->_disconnected && this->_webSocket.isOpen()) {
 			this->_heartbeat(true);
-			for (int i = 0; this->_webSocket.isOpen() && i < this->_hbInfos._heartbeatInterval; i += 1000) {
+			for (size_t i = 0; !this->_disconnected && this->_webSocket.isOpen() && i < this->_hbInfos._heartbeatInterval; i += 1000) {
 				if (this->_hbInfos._heartbeatInterval - i < 1000)
 					std::this_thread::sleep_for(std::chrono::milliseconds(this->_hbInfos._heartbeatInterval - i));
 				else
@@ -198,40 +265,17 @@ namespace DisCXXord {
 
 	void Client::_handleWebSocket()
 	{
-		this->_logger.debug("Listening for gatway payloads");
+		this->_logger.debug("Listening for gateway payloads");
 		this->_treatWebSocketPayloads();
 	}
 
-	void Client::run(const std::string &token)
-	{
-		this->_token = token;
-		try {
-			this->_connect();
-			this->_handleWebSocket();
-		} catch (std::exception &e) {
-			#ifdef __GNUG__
-			this->_logger.critical("Caught exception: " + getLastExceptionName());
-			#endif
-			this->_logger.critical(e.what());
-		}
-		if (this->_hbInfos._heartbeatThread.joinable())
-			this->_hbInfos._heartbeatThread.join();
-	}
-
-	void Client::run(const std::string &username, const std::string &password)
-	{
-		(void)username;
-		(void)password;
-	}
-
-	void Client::setHandlers(DisCXXord::Client::clientHandlers handl)
-	{
-		this->_handlers = handl;
-	}
 
 	void Client::_ready(JsonValue &val)
 	{
-		this->_me = User(val.to<JsonObject>()["user"]->to<JsonObject>());
+		User me(*this, val.to<JsonObject>()["user"]->to<JsonObject>());
+
+		this->_cachedUsers.emplace_back(me);
+		this->_me.emplace(me);
 		this->_logger.info("Connected on " + this->_me->tag());
 	}
 
@@ -262,7 +306,9 @@ namespace DisCXXord {
 
 	void Client::_guildCreate(JsonValue &val)
 	{
+		Guild guild(*this, val.to<JsonObject>());
 
+		this->_cachedGuilds.emplace_back(guild);
 	}
 
 	void Client::_guildUpdate(JsonValue &val)

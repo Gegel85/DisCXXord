@@ -6,8 +6,8 @@
 #include <sstream>
 #include <unistd.h>
 #include "SecuredSocket.hpp"
+#include "Exception.hpp"
 
-#include <iostream>
 namespace DisCXXord
 {
 	SecuredSocket::SecuredSocket() : Socket()

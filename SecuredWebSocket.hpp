@@ -23,24 +23,6 @@ namespace DisCXXord
 		static const char * const codesStrings[];
 		using Socket::connect;
 
-		class InvalidHandshakeException : public Exception {
-		public:
-			explicit InvalidHandshakeException(const std::string &msg) : Exception(msg) {};
-		};
-
-		class InvalidPongException : public Exception {
-		public:
-			explicit InvalidPongException(const std::string &msg) : Exception(msg) {};
-		};
-
-		class ConnectionTerminatedException : public Exception {
-		private:
-			int _code;
-		public:
-			explicit ConnectionTerminatedException(const std::string &msg, int code) : Exception(msg), _code(code) {};
-			int getCode() { return this->_code; };
-		};
-
 		SecuredWebSocket() = default;
 		~SecuredWebSocket() = default;
 		void		send(const std::string &value) override;

@@ -10,6 +10,11 @@ SRC =	SecuredSocket.cpp	\
 		Logger.cpp			\
 		Client.cpp			\
 		User.cpp			\
+		Snowflake.cpp		\
+		Date.cpp			\
+		Guild.cpp			\
+		Role.cpp			\
+		Member.cpp			\
 
 OBJ =	$(SRC:%.cpp=%.o)
 

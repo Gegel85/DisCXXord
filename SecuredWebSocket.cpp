@@ -5,6 +5,7 @@
 #include <cstring>
 #include <sstream>
 #include <iostream>
+#include "Exception.hpp"
 #include "SecuredWebSocket.hpp"
 
 namespace DisCXXord

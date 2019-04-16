@@ -6,6 +6,7 @@
 #include <sstream>
 #include <unistd.h>
 #include "Socket.hpp"
+#include "Exception.hpp"
 #include "platform.hpp"
 
 #ifndef _WINDOWS_DISCXXORD
@@ -28,7 +29,7 @@ namespace DisCXXord
 		/* create the socket */
 		this->_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		if (this->_sockfd == INVALID_SOCKET)
-			throw Socket::SocketCreationErrorException(strerror(errno));
+			throw SocketCreationErrorException(strerror(errno));
 	}
 
 	Socket::~Socket()
@@ -119,7 +120,7 @@ namespace DisCXXord
 		this->_opened = false;
 		this->_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		if (this->_sockfd == INVALID_SOCKET)
-			throw Socket::SocketCreationErrorException(strerror(errno));
+			throw SocketCreationErrorException(strerror(errno));
 	}
 
 	std::string Socket::makeRawRequest(const std::string &host, unsigned short portno, const std::string &content)
