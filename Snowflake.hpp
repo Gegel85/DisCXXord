@@ -13,14 +13,14 @@ namespace DisCXXord
 	class Snowflake {
 	protected:
 		Client &_parent;
-		std::string _id;
-		Date _createdAt;
 
 	public:
+		std::string id;
+		Date createdAt;
+
 		Snowflake(Client &client, JsonObject &obj);
-		const Date &createdAt() const;
-		std::string id() const;
 		std::string timestamp() const;
+		bool operator==(Snowflake &);
 	};
 }
 

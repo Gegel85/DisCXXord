@@ -3,16 +3,23 @@
 
 
 #include "User.hpp"
+#include "Role.hpp"
 
-namespace DisCXXord {
+namespace DisCXXord
+{
+	class Guild;
+
 	class Member {
-	private:
-		User &_user;
-
 	public:
-		Member(Client &client, User &user, JsonObject &object);
-		const User &user() const;
-		User &user();
+		Guild &guild;
+		User &user;
+		bool muted;
+		bool deafen;
+		Date joinedAt;
+		std::string nick;
+		std::vector<Role *> roles;
+
+		Member(Guild &guild, User &user, JsonObject &object);
 	};
 }
 

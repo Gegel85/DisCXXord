@@ -16,37 +16,24 @@ namespace DisCXXord
 	class Client;
 
 	class User : public Snowflake {
-	private:
-		bool _bot;
-		int _flags;
-		bool _mfaEnabled;
-		std::string _username;
-		std::string _discriminator;
-		std::optional<bool> _verified;
-		std::optional<int> _premium_type;
-		std::optional<std::string> _email;
-		std::optional<std::string> _locale;
-		std::optional<std::string> _avatarHash;
-
 	public:
+		int flags = 0;
+		bool bot = false;
+		bool mfaEnabled = false;
+		std::string username;
+		std::string discriminator;
+		std::optional<bool> verified;
+		std::optional<int> premium_type;
+		std::optional<std::string> email;
+		std::optional<std::string> locale;
+		std::optional<std::string> avatarHash;
+
 		User(Client &client, JsonObject &obj);
 		int defaultAvatar() const;
-		bool mfaEnabled() const;
-		bool bot() const;
-		int flags() const;
 		std::string tag() const;
-		std::string username() const;
-		std::string avatarURL() const;
-		std::string discriminator() const;
 		std::string mentionString() const;
-		std::string defaultAvatarURL() const;
-		std::optional<bool> verified() const;
-		std::optional<int> premium_type() const;
-		std::optional<std::string> email() const;
-		std::optional<std::string> locale() const;
-		std::optional<std::string> avatar() const;
-		std::string getDefaultAvatarURL(int size = 128) const;
-		std::string getAvatarURL(int size = 128, const std::string &format = "png") const;
+		std::string defaultAvatarURL(int size = 128) const;
+		std::string avatarURL(int size = 128, const std::string &format = "png") const;
 	};
 }
 

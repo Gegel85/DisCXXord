@@ -6,23 +6,18 @@ namespace DisCXXord
 {
 	Snowflake::Snowflake(Client &client, JsonObject &obj) :
 		_parent(client),
-		_id(obj["id"]->to<JsonString>().value()),
-		_createdAt((std::stoll(this->_id) >> 22) + 1420070400000)
+		id(obj["id"]->to<JsonString>().value()),
+		createdAt((std::stoll(this->id) >> 22) + 1420070400000)
 	{
-	}
-
-	const Date &Snowflake::createdAt() const
-	{
-		return this->_createdAt;
 	}
 
 	std::string Snowflake::timestamp() const
 	{
-		return this->createdAt().toISO();
+		return this->createdAt.toISO();
 	}
 
-	std::string Snowflake::id() const
+	bool Snowflake::operator==(DisCXXord::Snowflake &comp)
 	{
-		return this->_id;
+		return this->id == comp.id;
 	}
 }

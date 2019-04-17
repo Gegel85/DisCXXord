@@ -20,7 +20,7 @@ namespace DisCXXord
 	class Client {
 	public:
 		struct clientHandlers {
-			void (*onready)(Client &);
+			void (*ready)(Client &);
 		};
 
 		explicit Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::WARNING);

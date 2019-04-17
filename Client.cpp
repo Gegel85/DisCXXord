@@ -89,7 +89,7 @@ namespace DisCXXord
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
 		for (const User &user : this->_cachedUsers)
-			if (user.id() == id)
+			if (user.id == id)
 				return user;
 		throw UserNotFoundException("Cannot find user " + id);
 	}
@@ -100,7 +100,7 @@ namespace DisCXXord
 			std::string id = obj["id"]->to<JsonString>().value();
 
 			for (User &user : this->_cachedUsers)
-				if (user.id() == id)
+				if (user.id == id)
 					return user;
 			throw UserNotFoundException(id);
 		} catch (UserNotFoundException &) {
@@ -179,13 +179,16 @@ namespace DisCXXord
 			while (!this->_disconnected && timestruct.tv_sec) {
 				this->_logger.debug("Reading server answer");
 				std::string str = this->_webSocket.getAnswer();
-				this->_logger.debug(str);
-				auto val = JsonParser::parseString(str);
-				auto &object = val->to<JsonObject>();
+				try {
+					auto val = JsonParser::parseString(str);
+					auto &object = val->to<JsonObject>();
 
-				val->dump();
-				this->_logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"]->to<JsonNumber>().value())));
-				this->_handlePayload(object);
+					val->dump();
+					this->_logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"]->to<JsonNumber>().value())));
+					this->_handlePayload(object);
+				} catch (JsonParser::InvalidJsonStringException &e) {
+					throw JsonParser::InvalidJsonStringException("Cannot parse Json received from server\r\n" + str + "\r\n" + e.what());
+				}
 			}
 		}
 	}
@@ -269,7 +272,6 @@ namespace DisCXXord
 		this->_treatWebSocketPayloads();
 	}
 
-
 	void Client::_ready(JsonValue &val)
 	{
 		User me(*this, val.to<JsonObject>()["user"]->to<JsonObject>());
@@ -277,6 +279,8 @@ namespace DisCXXord
 		this->_cachedUsers.emplace_back(me);
 		this->_me.emplace(me);
 		this->_logger.info("Connected on " + this->_me->tag());
+		if (this->_handlers.ready)
+			this->_handlers.ready(*this);
 	}
 
 	void Client::_resumed(JsonValue &val)
