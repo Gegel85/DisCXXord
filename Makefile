@@ -15,6 +15,7 @@ SRC =	SecuredSocket.cpp	\
 		Guild.cpp			\
 		Role.cpp			\
 		Member.cpp			\
+		Request.cpp			\
 
 OBJ =	$(SRC:%.cpp=%.o)
 

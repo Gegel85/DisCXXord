@@ -5,8 +5,10 @@
 #include <string>
 #include <JsonParser.hpp>
 #include "defines.hpp"
-#include "Exception.hpp"
+#include "Exceptions.hpp"
 #include "Client.hpp"
+#include "Request.hpp"
+#include "endpoints.hpp"
 
 #ifndef _WINDOWS_DISCXXORD
 #	include <sys/select.h>
@@ -57,9 +59,10 @@ namespace DisCXXord
 			this->_handleWebSocket();
 		} catch (std::exception &e) {
 			#ifdef __GNUG__
-			this->_logger.critical("Caught exception: " + getLastExceptionName());
+			this->_logger.critical("Caught exception: " + getLastExceptionName() + "(" + e.what() + ")");
+			#else
+			this->_logger.critical("Caught exception: " + e.what());
 			#endif
-			this->_logger.critical(e.what());
 			this->_disconnected = true;
 		}
 		if (this->_hbInfos._heartbeatThread.joinable())
@@ -91,7 +94,13 @@ namespace DisCXXord
 		for (const User &user : this->_cachedUsers)
 			if (user.id == id)
 				return user;
+		//TODO: Try with API
 		throw UserNotFoundException("Cannot find user " + id);
+	}
+
+	const std::vector<std::string> &Client::guilds()
+	{
+		return this->_guilds;
 	}
 
 	User &Client::makeUser(JsonObject &obj)
@@ -183,7 +192,6 @@ namespace DisCXXord
 					auto val = JsonParser::parseString(str);
 					auto &object = val->to<JsonObject>();
 
-					val->dump();
 					this->_logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"]->to<JsonNumber>().value())));
 					this->_handlePayload(object);
 				} catch (JsonParser::InvalidJsonStringException &e) {
@@ -205,23 +213,42 @@ namespace DisCXXord
 		return {};
 	}
 
-	void Client::_connect()
+	std::unique_ptr<JsonValue> Client::_makeApiRequest(const std::string &endpt, const std::string &method, const std::string &body)
 	{
-		Socket::HttpRequestIn request = {
-			.method = "GET",
-			.host = "discordapp.com",
-			.portno = 443,
-			.header = {},
-			.path = "/api/gateway",
+		Request::HttpRequest	result{
+			.method = method,
+			.url = API_BASE_URL + endpt,
+			.body = body,
+			.headers = {
+				{"Authorization", this->_token},
+				{"User-Agent", "DiscordBot (" LIBLINK ", " VERSION ")"}
+			}
 		};
 
+		if (!body.empty()) {
+			result.headers["Content-Type"] = "application/json";
+			result.headers["Content-Length"] = std::to_string(body.size());
+		}
+		result = Request::request(result);
+		//TODO: Handle 429 and 502
+		//TODO: Handle global rate limit
+		if (result.code >= 400)
+			throw APIErrorException(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
+		return JsonParser::parseString(result.body);
+	}
+
+	void Client::_connect()
+	{
+		this->_logger.info(LIBNAME " version " VERSION);
+		this->_logger.debug("Getting current user");
+		this->_me.emplace(User(*this, this->_makeApiRequest(USER_ME_ENDPT)->to<JsonObject>()));
+		this->_logger.info("Connected on " + this->_me->tag());
 		this->_logger.debug("Fetching gateway URL");
 
-		std::string url = this->_httpSocket.makeHttpRequest(request).body;
-		auto val = JsonParser::parseString(url);
+		auto val = this->_makeApiRequest(GATEWAY_ENDPT);
 		auto &object = val->to<JsonObject>();
+		std::string url = object["url"]->to<JsonString>().value();
 
-		url = object["url"]->to<JsonString>().value();
 		this->_logger.info("Connecting to Gateway");
 		this->_webSocket.connect(url.substr(6, url.size() - 6), 443);
 
@@ -274,13 +301,19 @@ namespace DisCXXord
 
 	void Client::_ready(JsonValue &val)
 	{
-		User me(*this, val.to<JsonObject>()["user"]->to<JsonObject>());
-
-		this->_cachedUsers.emplace_back(me);
-		this->_me.emplace(me);
-		this->_logger.info("Connected on " + this->_me->tag());
+		this->_guilds = {};
+		for (auto &elem : val.to<JsonObject>()["guilds"]->to<JsonArray>().value())
+			this->_guilds.emplace_back(elem->to<JsonObject>()["id"]->to<JsonString>().value());
 		if (this->_handlers.ready)
-			this->_handlers.ready(*this);
+			try {
+				this->_handlers.ready(*this);
+			} catch (std::exception &e) {
+				#ifdef __GNUG__
+				this->_logger.error("Caught exception in onready function: " + getLastExceptionName() + "(" + e.what() + ")");
+				#else
+				this->_logger.error("Caught exception in onready function: " + e.what());
+				#endif
+			}
 	}
 
 	void Client::_resumed(JsonValue &val)

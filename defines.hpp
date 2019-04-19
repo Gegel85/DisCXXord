@@ -7,6 +7,8 @@
 
 #include "platform.hpp"
 
-#define LIBNAME "disc++ord"
+#define LIBNAME	"disc++ord"
+#define LIBLINK	"https://github.com/Gegel85/DisCXXord"
+#define VERSION	"ALPHA 0.0.1"
 
 #endif //DISC_ORD_DEFINES_HPP

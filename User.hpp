@@ -17,6 +17,18 @@ namespace DisCXXord
 
 	class User : public Snowflake {
 	public:
+		enum Flag {
+			NONE		= 0,
+			DISCORD_EMPLOYEE= 1 << 0,
+			DISCORD_PARTNER	= 1 << 1,
+			HYPESQUAD_EVENTS= 1 << 2,
+			BUG_HUNTER	= 1 << 3,
+			HOUSE_BRAVERY	= 1 << 6,
+			HOUSE_BRILLIANCE= 1 << 7,
+			HOUSE_BALANCE	= 1 << 8,
+			EARLY_SUPPORTER	= 1 << 9,
+		};
+
 		int flags = 0;
 		bool bot = false;
 		bool mfaEnabled = false;
@@ -32,6 +44,7 @@ namespace DisCXXord
 		int defaultAvatar() const;
 		std::string tag() const;
 		std::string mentionString() const;
+		bool hasFlag(Flag flag);
 		std::string defaultAvatarURL(int size = 128) const;
 		std::string avatarURL(int size = 128, const std::string &format = "png") const;
 	};

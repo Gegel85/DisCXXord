@@ -1,6 +1,6 @@
 #include "Guild.hpp"
 #include "Client.hpp"
-#include "Exception.hpp"
+#include "Exceptions.hpp"
 
 namespace DisCXXord
 {

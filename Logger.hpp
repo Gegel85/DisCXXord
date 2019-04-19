@@ -11,6 +11,9 @@
 
 namespace DisCXXord {
 	class Logger {
+	private:
+		void _dispTime(std::ostream &stream);
+
 	public:
 		enum LogLevel {
 			DEBUG,

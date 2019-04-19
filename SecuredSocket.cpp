@@ -6,7 +6,7 @@
 #include <sstream>
 #include <unistd.h>
 #include "SecuredSocket.hpp"
-#include "Exception.hpp"
+#include "Exceptions.hpp"
 
 namespace DisCXXord
 {

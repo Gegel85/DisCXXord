@@ -15,8 +15,8 @@ namespace DisCXXord
 		Client &_parent;
 
 	public:
-		std::string id;
-		Date createdAt;
+		const std::string id;
+		const Date createdAt;
 
 		Snowflake(Client &client, JsonObject &obj);
 		std::string timestamp() const;

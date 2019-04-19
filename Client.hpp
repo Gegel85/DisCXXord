@@ -23,9 +23,10 @@ namespace DisCXXord
 			void (*ready)(Client &);
 		};
 
-		explicit Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::WARNING);
+		explicit Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::INFO);
 		~Client();
 		const User &me();
+		const std::vector<std::string> &guilds();
 		const User &getUser(const std::string &id);
 		void setHandlers(clientHandlers handl);
 		void disconnect();
@@ -34,6 +35,7 @@ namespace DisCXXord
 		User &makeUser(JsonObject &obj);
 
 	private:
+		std::unique_ptr<JsonValue> _makeApiRequest(const std::string &endpt, const std::string &method = "GET", const std::string &body = "");
 		std::optional<std::string> _timedGetAnswer(int time);
 		void _connect();
 		void _heartbeatLoop();
@@ -127,9 +129,9 @@ namespace DisCXXord
 		std::optional<User>	_me;
 		std::vector<User>	_cachedUsers;
 		std::vector<Guild>	_cachedGuilds;
+		std::vector<std::string>_guilds;
 		std::string 		_token;
 		SecuredWebSocket	_webSocket;
-		SecuredSocket		_httpSocket;
 		clientHandlers		_handlers;
 		Logger			_logger;
 		HeartbeatInfos		_hbInfos;

@@ -5,6 +5,8 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <ctime>
+#include <iomanip>
 #include "Logger.hpp"
 #include "platform.hpp"
 
@@ -76,29 +78,45 @@ namespace DisCXXord {
 
 	#endif
 
+	void Logger::_dispTime(std::ostream &stream)
+	{
+		time_t timestamp = std::time(nullptr);
+		struct tm *tm = std::localtime(&timestamp);
+
+		stream << std::put_time(tm, "[%d-%m-%Y][%H:%M:%S]");
+	}
+
 	void Logger::debug(const std::string &msg)
 	{
 		if (this->_logLevel <= DEBUG) {
 			this->setTextColor(WHITE);
-			std::cout << "[DEBUG]: " << msg << std::endl;
-			this->_file << "[DEBUG]: " << msg << std::endl;
+			this->_dispTime(std::cout);
+			this->_dispTime(this->_file);
+			std::cout << "[DEBUG]:   " << msg << std::endl;
+			this->_file << "[DEBUG]:   " << msg << std::endl;
 		}
 	}
 
 	void Logger::info(const std::string &msg)
 	{
 		if (this->_logLevel <= INFO) {
+			this->setTextColor(WHITE);
+			this->_dispTime(std::cout);
+			this->_dispTime(this->_file);
 			this->setTextColor(BLUE);
 			std::cout << "[INFO]";
 			this->setTextColor(WHITE);
-			std::cout << ": " << msg << std::endl;
-			this->_file << "[INFO]: " << msg << std::endl;
+			std::cout << ":    " << msg << std::endl;
+			this->_file << "[INFO]:    " << msg << std::endl;
 		}
 	}
 
 	void Logger::warning(const std::string &msg)
 	{
 		if (this->_logLevel <= WARNING) {
+			this->setTextColor(WHITE);
+			this->_dispTime(std::cout);
+			this->_dispTime(this->_file);
 			this->setTextColor(YELLOW);
 			std::cout << "[WARNING]";
 			this->setTextColor(WHITE);
@@ -110,22 +128,28 @@ namespace DisCXXord {
 	void Logger::error(const std::string &msg)
 	{
 		if (this->_logLevel <= ERR) {
+			this->setTextColor(WHITE);
+			this->_dispTime(std::cout);
+			this->_dispTime(this->_file);
 			this->setTextColor(DARK_RED);
 			std::cout << "[ERROR]";
 			this->setTextColor(WHITE);
-			std::cout << ": " << msg << std::endl;
-			this->_file << "[ERROR]: " << msg << std::endl;
+			std::cout << ":   " << msg << std::endl;
+			this->_file << "[ERROR]:   " << msg << std::endl;
 		}
 	}
 
 	void Logger::critical(const std::string &msg)
 	{
 		if (this->_logLevel <= CRITICAL) {
+			this->setTextColor(WHITE);
+			this->_dispTime(std::cout);
+			this->_dispTime(this->_file);
 			this->setTextColor(RED);
 			std::cout << "[FATAL]";
 			this->setTextColor(WHITE);
-			std::cout << ": " << msg << std::endl;
-			this->_file << "[FATAL]: " << msg << std::endl;
+			std::cout << ":   " << msg << std::endl;
+			this->_file << "[FATAL]:   " << msg << std::endl;
 		}
 	}
 }

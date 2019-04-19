@@ -6,7 +6,7 @@
 #include <sstream>
 #include <unistd.h>
 #include "Socket.hpp"
-#include "Exception.hpp"
+#include "Exceptions.hpp"
 #include "platform.hpp"
 
 #ifndef _WINDOWS_DISCXXORD
@@ -97,7 +97,7 @@ namespace DisCXXord
 		msg << "Host: " << request.host << "\r\n";
 		for (auto &entry : request.header)
 			msg << entry.first << ": " << entry.second << "\r\n";
-		msg << "\r\n";
+		msg << "\r\n" << request.body;
 		return msg.str();
 	}
 

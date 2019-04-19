@@ -63,13 +63,18 @@ namespace DisCXXord
 
 	std::string User::defaultAvatarURL(int size) const
 	{
-		return IMAGE_ENDPOINT + ("embed/avatars/" + std::to_string(this->defaultAvatar())) + ".png?size=" + std::to_string(size);
+		return IMAGE_BASE_URL + ("/embed/avatars/" + std::to_string(this->defaultAvatar())) + ".png?size=" + std::to_string(size);
 	}
 
 	std::string User::avatarURL(int size, const std::string &format) const
 	{
 		if (!this->avatarHash)
 			return defaultAvatarURL(size);
-		return IMAGE_ENDPOINT + ("avatars/" + this->id) + "/" + *this->avatarHash + "." + format + "?size=" + std::to_string(size);
+		return IMAGE_BASE_URL + ("/avatars/" + this->id) + "/" + *this->avatarHash + "." + format + "?size=" + std::to_string(size);
+	}
+
+	bool User::hasFlag(DisCXXord::User::Flag flag)
+	{
+		return (this->flags & flag) != 0;
 	}
 }

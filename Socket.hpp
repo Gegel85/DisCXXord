@@ -20,6 +20,7 @@ namespace DisCXXord {
 	class Socket {
 	public:
 		struct HttpRequestIn {
+			std::string				body;
 			std::string				method;
 			std::string				host;
 			int					portno;
@@ -44,7 +45,7 @@ namespace DisCXXord {
 		virtual void		send(const std::string &);
 		virtual std::string	read(int size);
 		virtual std::string	readUntilEOF();
-		std::string		generateHttpRequest(const HttpRequestIn &);
+		static std::string	generateHttpRequest(const HttpRequestIn &);
 		HttpRequestOut		makeHttpRequest(const HttpRequestIn &);
 		std::string		makeRawRequest(const std::string &host, unsigned short portno, const std::string &content);
 		SOCKET			getSockFd() { return this->_sockfd; };
