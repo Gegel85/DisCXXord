@@ -32,7 +32,6 @@ namespace DisCXXord
 		void disconnect();
 		void run(const std::string &username, const std::string &password);
 		void run(const std::string &token);
-		User &makeUser(JsonObject &obj);
 
 	private:
 		std::unique_ptr<JsonValue> _makeApiRequest(const std::string &endpt, const std::string &method = "GET", const std::string &body = "");

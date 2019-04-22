@@ -6,5 +6,6 @@
 
 #define USER_ME_ENDPT	"/users/@me"
 #define GATEWAY_ENDPT	"/gateway"
+#define GET_USER_ENDPT	"/users/"
 
 #endif

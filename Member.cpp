@@ -1,9 +1,8 @@
 #include "Member.hpp"
 
-
 namespace DisCXXord
 {
-	Member::Member(Guild &guild, User &user, JsonObject &object) :
+	Member::Member(Guild &guild, const User &user, JsonObject &object) :
 		guild(guild),
 		user(user),
 		joinedAt(object["joined_at"]->to<JsonString>().value())

@@ -16,6 +16,7 @@ SRC =	SecuredSocket.cpp	\
 		Role.cpp			\
 		Member.cpp			\
 		Request.cpp			\
+		Permissions.cpp		\
 
 OBJ =	$(SRC:%.cpp=%.o)
 

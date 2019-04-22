@@ -15,20 +15,43 @@ namespace DisCXXord
 
 	class Guild : public Snowflake {
 	public:
-		int mfaLvl;
+		enum MsgNotifLvl {
+			ALL_MESSAGE,
+			ONLY_MENTIONS
+		};
+
+		enum ExplicitContentFilterLvl {
+			DISABLED,
+			MEMBERS_WITHOUT_ROLES,
+			ALL_MEMBERS
+		};
+
+		enum MFALvl {
+			NO_MFA,
+			ELEVATED
+		};
+
+		enum VerificationLvl {
+			NO_VERIFICATION,
+			LOW,
+			MEDIUM,
+			HIGH,
+			VERY_HIGH
+		};
+
 		int afkTimeout;
 		int memberCount;
-		int defaultMsgNotif;
-		int verificationLevel;
-		int exlicitContentFilter;
 		bool large;
 		bool embedsEnabled;
 		bool widgetEnabled;
 		bool available;
 		Date joinedAt;
+		MFALvl mfaLvl;
 		const User *owner;
+		MsgNotifLvl defaultMsgNotif;
 		std::string name;
 		std::string region;
+		VerificationLvl verificationLevel;
 		std::vector<Role> roles;
 		std::vector<Member> members;
 		std::vector<Channel> channels;
@@ -37,6 +60,7 @@ namespace DisCXXord
 		std::optional<Channel> widgetChannel;
 		std::optional<Channel> systemChannel;
 		std::vector<std::string> features;
+		ExplicitContentFilterLvl exlicitContentFilter;
 		std::optional<std::string> icon;
 		std::optional<std::string> banner;
 		std::optional<std::string> splash;
@@ -45,10 +69,11 @@ namespace DisCXXord
 		std::map<std::string, int> permissions;
 
 		Guild(Client &client, JsonObject &obj);
-		const Role &getRole(std::string id) const;
-		const Member &getMember(std::string id) const;
-		const Channel &getChannel(std::string id) const;
-		int getPermissions(std::string id) const;
+		const Role &getRole(const std::string &id) const;
+		const Role &getRoleByName(const std::string &name) const;
+		const Member &getMember(const std::string &id) const;
+		const Channel &getChannel(const std::string &id) const;
+		int getPermissions(const std::string &id) const;
 	};
 }
 

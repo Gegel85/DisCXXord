@@ -94,30 +94,19 @@ namespace DisCXXord
 		for (const User &user : this->_cachedUsers)
 			if (user.id == id)
 				return user;
-		//TODO: Try with API
-		throw UserNotFoundException("Cannot find user " + id);
+		try {
+			std::unique_ptr<JsonValue> val = this->_makeApiRequest(GET_USER_ENDPT + id);
+
+			this->_cachedUsers.emplace_back(User(*this, val->to<JsonObject>()));
+			return this->_cachedUsers.back();
+		} catch (APIErrorException &) {
+			throw UserNotFoundException("Cannot find user " + id);
+		}
 	}
 
 	const std::vector<std::string> &Client::guilds()
 	{
 		return this->_guilds;
-	}
-
-	User &Client::makeUser(JsonObject &obj)
-	{
-		try {
-			std::string id = obj["id"]->to<JsonString>().value();
-
-			for (User &user : this->_cachedUsers)
-				if (user.id == id)
-					return user;
-			throw UserNotFoundException(id);
-		} catch (UserNotFoundException &) {
-			User user(*this, obj);
-
-			this->_cachedUsers.emplace_back(user);
-			return this->_cachedUsers.back();
-		}
 	}
 
 
