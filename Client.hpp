@@ -25,16 +25,18 @@ namespace DisCXXord
 
 		explicit Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::INFO);
 		~Client();
-		const User &me();
+		User &me();
+		User &getUser(JsonObject &obj);
+		User &getUser(const std::string &id);
+		Guild &getGuild(const std::string &id);
 		const std::vector<std::string> &guilds();
-		const User &getUser(const std::string &id);
 		void setHandlers(clientHandlers handl);
 		void disconnect();
 		void run(const std::string &username, const std::string &password);
 		void run(const std::string &token);
+		std::unique_ptr<JsonValue> makeApiRequest(const std::string &endpt, const std::string &method = "GET", const std::string &body = "");
 
 	private:
-		std::unique_ptr<JsonValue> _makeApiRequest(const std::string &endpt, const std::string &method = "GET", const std::string &body = "");
 		std::optional<std::string> _timedGetAnswer(int time);
 		void _connect();
 		void _heartbeatLoop();
@@ -126,8 +128,8 @@ namespace DisCXXord
 		};
 
 		std::optional<User>	_me;
-		std::vector<User>	_cachedUsers;
-		std::vector<Guild>	_cachedGuilds;
+		std::vector<User *>	_cachedUsers;
+		std::vector<Guild *>	_cachedGuilds;
 		std::vector<std::string>_guilds;
 		std::string 		_token;
 		SecuredWebSocket	_webSocket;

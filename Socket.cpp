@@ -21,7 +21,7 @@ namespace DisCXXord
 {
 	Socket::Socket()
 	{
-	#if defined _WIN32 || defined __WIN32 || defined __WIN32__
+	#ifdef _WINDOWS_DISCXXORD
 		WSADATA			WSAData;
 		WSAStartup(MAKEWORD(2,0), &WSAData);
 	#endif

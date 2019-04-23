@@ -80,24 +80,34 @@ namespace DisCXXord
 		explicit EOFException(const std::string &msg) : BaseException(msg) {};
 	};
 
-	class RoleNotFoundException : public BaseException {
+	class NotFoundException : public BaseException {
 	public:
-		explicit RoleNotFoundException(const std::string &msg) : BaseException(msg) {};
+		explicit NotFoundException(const std::string &msg) : BaseException(msg) {};
 	};
 
-	class MemberNotFoundException : public BaseException {
+	class RoleNotFoundException : public NotFoundException {
 	public:
-		explicit MemberNotFoundException(const std::string &msg) : BaseException(msg) {};
+		explicit RoleNotFoundException(const std::string &msg) : NotFoundException(msg) {};
 	};
 
-	class ChannelNotFoundException : public BaseException {
+	class MemberNotFoundException : public NotFoundException {
 	public:
-		explicit ChannelNotFoundException(const std::string &msg) : BaseException(msg) {};
+		explicit MemberNotFoundException(const std::string &msg) : NotFoundException(msg) {};
 	};
 
-	class UserNotFoundException : public BaseException {
+	class ChannelNotFoundException : public NotFoundException {
 	public:
-		explicit UserNotFoundException(const std::string &msg) : BaseException(msg) {};
+		explicit ChannelNotFoundException(const std::string &msg) : NotFoundException(msg) {};
+	};
+
+	class UserNotFoundException : public NotFoundException {
+	public:
+		explicit UserNotFoundException(const std::string &msg) : NotFoundException(msg) {};
+	};
+
+	class GuildNotFoundException : public NotFoundException {
+	public:
+		explicit GuildNotFoundException(const std::string &msg) : NotFoundException(msg) {};
 	};
 
 	class InvalidURLException : public BaseException {

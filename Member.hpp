@@ -12,14 +12,14 @@ namespace DisCXXord
 	class Member {
 	public:
 		Guild &guild;
-		const User &user;
+		User &user;
 		bool muted;
 		bool deafen;
 		Date joinedAt;
 		std::string nick;
 		std::vector<Role *> roles;
 
-		Member(Guild &guild, const User &user, JsonObject &object);
+		Member(Guild &guild, User &user, JsonObject &object);
 	};
 }
 

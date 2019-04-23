@@ -6,6 +6,9 @@
 
 #define USER_ME_ENDPT	"/users/@me"
 #define GATEWAY_ENDPT	"/gateway"
-#define GET_USER_ENDPT	"/users/"
+#define GET_USER_ENDPT	"/users"
+#define GUILDS_ENDPT	"/guilds"
+#define MEMBER_ENDPT	"/members"
+#define ROLES_ENDPT	"/roles"
 
 #endif

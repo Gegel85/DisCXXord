@@ -42,10 +42,10 @@ namespace DisCXXord {
 			SetConsoleTextAttribute(hConsole, col | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 			break;
 		case RED:
-			SetConsoleTextAttribute(hConsole, col | FOREGROUND_RED);
+			SetConsoleTextAttribute(hConsole, col | FOREGROUND_RED | FOREGROUND_INTENSITY);
 			break;
 		case DARK_RED:
-			SetConsoleTextAttribute(hConsole, col | FOREGROUND_RED | FOREGROUND_INTENSITY);
+			SetConsoleTextAttribute(hConsole, col | FOREGROUND_RED);
 			break;
 		case YELLOW:
 			SetConsoleTextAttribute(hConsole, col | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
@@ -131,7 +131,7 @@ namespace DisCXXord {
 			this->setTextColor(WHITE);
 			this->_dispTime(std::cout);
 			this->_dispTime(this->_file);
-			this->setTextColor(DARK_RED);
+			this->setTextColor(RED);
 			std::cout << "[ERROR]";
 			this->setTextColor(WHITE);
 			std::cout << ":   " << msg << std::endl;
@@ -145,7 +145,7 @@ namespace DisCXXord {
 			this->setTextColor(WHITE);
 			this->_dispTime(std::cout);
 			this->_dispTime(this->_file);
-			this->setTextColor(RED);
+			this->setTextColor(DARK_RED);
 			std::cout << "[FATAL]";
 			this->setTextColor(WHITE);
 			std::cout << ":   " << msg << std::endl;

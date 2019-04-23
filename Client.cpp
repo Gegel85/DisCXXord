@@ -42,6 +42,10 @@ namespace DisCXXord
 	{
 		if (this->_webSocket.isOpen())
 			this->_webSocket.disconnect();
+		for (Guild *guild : this->_cachedGuilds)
+			delete guild;
+		for (User *user : this->_cachedUsers)
+			delete user;
 	}
 
 	void Client::disconnect()
@@ -80,25 +84,55 @@ namespace DisCXXord
 		this->_handlers = handl;
 	}
 
-	const User &Client::me()
+	User &Client::me()
 	{
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
 		return *this->_me;
 	}
 
-	const User &Client::getUser(const std::string &id)
+	User &Client::getUser(const std::string &id)
 	{
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
-		for (const User &user : this->_cachedUsers)
-			if (user.id == id)
-				return user;
+		for (User *user : this->_cachedUsers)
+			if (user->id == id)
+				return *user;
 		try {
-			std::unique_ptr<JsonValue> val = this->_makeApiRequest(GET_USER_ENDPT + id);
+			std::unique_ptr<JsonValue> val = this->makeApiRequest(
+				GET_USER_ENDPT"/" + id);
 
-			this->_cachedUsers.emplace_back(User(*this, val->to<JsonObject>()));
-			return this->_cachedUsers.back();
+			this->_cachedUsers.emplace_back(new User(*this, val->to<JsonObject>()));
+			return *this->_cachedUsers.back();
+		} catch (APIErrorException &) {
+			throw UserNotFoundException("Cannot find user " + id);
+		}
+	}
+
+	User &Client::getUser(JsonObject &obj)
+	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
+		for (User *user : this->_cachedUsers)
+			if (user->id == obj["id"]->to<JsonString>().value())
+				return *user;
+		this->_cachedUsers.emplace_back(new User(*this, obj));
+		return *this->_cachedUsers.back();
+	}
+
+	Guild &Client::getGuild(const std::string &id)
+	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
+		for (Guild *guild : this->_cachedGuilds)
+			if (guild->id == id)
+				return *guild;
+		try {
+			std::unique_ptr<JsonValue> val = this->makeApiRequest(
+				GUILDS_ENDPT"/" + id);
+
+			this->_cachedGuilds.emplace_back(new Guild(*this, val->to<JsonObject>()));
+			return *this->_cachedGuilds.back();
 		} catch (APIErrorException &) {
 			throw UserNotFoundException("Cannot find user " + id);
 		}
@@ -107,6 +141,34 @@ namespace DisCXXord
 	const std::vector<std::string> &Client::guilds()
 	{
 		return this->_guilds;
+	}
+
+	std::unique_ptr<JsonValue> Client::makeApiRequest(const std::string &endpt, const std::string &method, const std::string &body)
+	{
+		Request::HttpRequest	result{
+			.method = method,
+			.url = API_BASE_URL + endpt,
+			.body = body,
+			.headers = {
+				{"Authorization", this->_token},
+				{"User-Agent", "DiscordBot (" LIBLINK ", " VERSION ")"}
+			}
+		};
+
+		if (!body.empty()) {
+			result.headers["Content-Type"] = "application/json";
+			result.headers["Content-Length"] = std::to_string(body.size());
+		}
+		this->_logger.debug(method + ": " + API_BASE_URL + endpt + " \"" + body + "\"");
+		result = Request::request(result);
+		//TODO: Handle 429 and 502
+		//TODO: Handle global rate limit
+		if (result.code >= 400) {
+			this->_logger.error(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
+			throw APIErrorException(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
+		}
+		this->_logger.debug(std::to_string(result.code) + " (" + result.codeName + "): \"" + result.body + "\"");
+		return JsonParser::parseString(result.body);
 	}
 
 
@@ -202,39 +264,16 @@ namespace DisCXXord
 		return {};
 	}
 
-	std::unique_ptr<JsonValue> Client::_makeApiRequest(const std::string &endpt, const std::string &method, const std::string &body)
-	{
-		Request::HttpRequest	result{
-			.method = method,
-			.url = API_BASE_URL + endpt,
-			.body = body,
-			.headers = {
-				{"Authorization", this->_token},
-				{"User-Agent", "DiscordBot (" LIBLINK ", " VERSION ")"}
-			}
-		};
-
-		if (!body.empty()) {
-			result.headers["Content-Type"] = "application/json";
-			result.headers["Content-Length"] = std::to_string(body.size());
-		}
-		result = Request::request(result);
-		//TODO: Handle 429 and 502
-		//TODO: Handle global rate limit
-		if (result.code >= 400)
-			throw APIErrorException(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
-		return JsonParser::parseString(result.body);
-	}
-
 	void Client::_connect()
 	{
 		this->_logger.info(LIBNAME " version " VERSION);
 		this->_logger.debug("Getting current user");
-		this->_me.emplace(User(*this, this->_makeApiRequest(USER_ME_ENDPT)->to<JsonObject>()));
+		this->_me.emplace(User(*this,
+				       this->makeApiRequest(USER_ME_ENDPT)->to<JsonObject>()));
 		this->_logger.info("Connected on " + this->_me->tag());
 		this->_logger.debug("Fetching gateway URL");
 
-		auto val = this->_makeApiRequest(GATEWAY_ENDPT);
+		auto val = this->makeApiRequest(GATEWAY_ENDPT);
 		auto &object = val->to<JsonObject>();
 		std::string url = object["url"]->to<JsonString>().value();
 
@@ -332,9 +371,12 @@ namespace DisCXXord
 
 	void Client::_guildCreate(JsonValue &val)
 	{
-		Guild guild(*this, val.to<JsonObject>());
-
-		this->_cachedGuilds.emplace_back(guild);
+		for (unsigned i = 0; i < this->_cachedGuilds.size(); i++)
+			if (this->_cachedGuilds[i]->id == val.to<JsonObject>()["id"]->to<JsonString>().value()) {
+				delete this->_cachedGuilds[i];
+				this->_cachedGuilds.erase(this->_cachedGuilds.begin() + i);
+			}
+		this->_cachedGuilds.emplace_back(new Guild(*this, val.to<JsonObject>()));
 	}
 
 	void Client::_guildUpdate(JsonValue &val)

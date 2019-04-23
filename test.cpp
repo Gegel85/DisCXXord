@@ -13,8 +13,14 @@ void	ready(Client &client)
 	std::cout << "My avatar url is " << me.avatarURL() << std::endl;
 	std::cout << "I'm on " << client.guilds().size() << " server(s) !" << std::endl;
 	std::cout << "Here is the ids of all those servers: " << std::endl;
-	for (const std::string &id : client.guilds())
+	for (const std::string &id : client.guilds()) {
 		std::cout << "\t" << id << std::endl;
+		std::cout << "\tClients list: " << std::endl;
+		for (Member &member : client.getGuild(id).members) {
+			std::cout << "\t\tid: " << member.user.id << std::endl;
+			std::cout << "\t\tname: " << member.nick << "(" << member.user.username << ")" << std::endl;
+		}
+	}
 }
 
 int	main()

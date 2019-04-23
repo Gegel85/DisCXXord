@@ -1,13 +1,90 @@
 #include "Guild.hpp"
 #include "Client.hpp"
 #include "Exceptions.hpp"
+#include "endpoints.hpp"
 
 namespace DisCXXord
 {
 	Guild::Guild(Client &client, JsonObject &obj) :
-		Snowflake(client, obj),
-		joinedAt(obj["joined_at"]->to<JsonString>().value())
+		Snowflake(client, obj)
 	{
+		try {
+			this->available = !obj["unavailable"]->to<JsonBoolean>().value();
+
+			if (!this->available)
+				return;
+			this->joinedAt = Date(obj["joined_at"]->to<JsonString>().value());
+
+			this->large = obj["large"]->to<JsonBoolean>().value();
+			this->memberCount = obj["member_count"]->to<JsonNumber>().value();
+
+			//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
+			//TODO: channels? *	array of channel objects	channels in the guild
+			//TODO: presences? *	array of partial presence update objects	presences of the users in the guild
+
+		} catch (std::out_of_range &) {
+			this->available = true;
+			this->complete = false;
+		}
+
+		try {
+			for (auto &val : obj["roles"]->to<JsonArray>().value()) {
+				try {
+					this->roles.emplace_back(
+						Role(client, val->to<JsonObject>())
+					);
+				} catch (std::out_of_range &e) {
+					throw std::out_of_range('\r' + std::string(e.what()));
+				}
+			}
+		} catch (std::out_of_range &e) {
+			if (e.what()[0] == '\r')
+				throw std::out_of_range(&e.what()[1]);
+			auto value = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + ROLES_ENDPT);
+			auto &array = value->to<JsonArray>();
+
+			for (auto &val : array.value())
+				this->roles.emplace_back(
+					Role(client, val->to<JsonObject>())
+				);
+		}
+
+		try {
+			auto &array = obj["members"]->to<JsonArray>();
+
+			for (auto &val : array.value()) {
+				try {
+					this->members.emplace_back(
+						Member(
+							*this,
+							client.getUser(
+								val->to<JsonObject>()["user"]->to<JsonObject>()
+							),
+							val->to<JsonObject>()
+						)
+					);
+				} catch (std::out_of_range &e) {
+					throw std::out_of_range('\r' + std::string(e.what()));
+				}
+			}
+		} catch (std::out_of_range &e) {
+			if (e.what()[0] == '\r')
+				throw std::out_of_range(&e.what()[1]);
+			auto value = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + MEMBER_ENDPT + "?limit=1000");
+			auto &array = value->to<JsonArray>();
+
+			for (auto &val : array.value())
+				this->members.emplace_back(
+					Member(
+						*this,
+						client.getUser(
+							val->to<JsonObject>()["user"]->to<JsonObject>()
+						),
+						val->to<JsonObject>()
+					)
+				);
+		}
+
 		this->name = obj["name"]->to<JsonString>().value();
 
 		if (!obj["icon"]->is<JsonNull>())
@@ -35,10 +112,6 @@ namespace DisCXXord
 		this->exlicitContentFilter = static_cast<ExplicitContentFilterLvl>(obj["explicit_content_filter"]->to<JsonNumber>().value());
 		this->mfaLvl = static_cast<MFALvl>(obj["mfa_level"]->to<JsonNumber>().value());
 
-		for (auto &val : obj["roles"]->to<JsonArray>().value())
-			this->roles.emplace_back(
-				Role(client, val->to<JsonObject>())
-			);
 
 		//TODO: emojis	array of emoji objects	custom guild emojis
 
@@ -51,26 +124,8 @@ namespace DisCXXord
 			this->widgetEnabled = obj["widget_enabled"]->to<JsonBoolean>().value();
 		} catch (std::out_of_range &) {}
 
-		this->large = obj["large"]->to<JsonBoolean>().value();
-		this->available = !obj["unavailable"]->to<JsonBoolean>().value();
-		this->memberCount = obj["member_count"]->to<JsonNumber>().value();
-
-		for (auto &val : obj["members"]->to<JsonArray>().value())
-			this->members.emplace_back(
-				Member(
-					*this,
-					client.getUser(
-						val->to<JsonObject>()["user"]->to<JsonObject>()["id"]->to<JsonString>().value()
-					),
-					val->to<JsonObject>()
-				)
-			);
-
 		this->owner = &client.getUser(obj["owner_id"]->to<JsonString>().value());
 
-		//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
-		//TODO: channels? *	array of channel objects	channels in the guild
-		//TODO: presences? *	array of partial presence update objects	presences of the users in the guild
 		//TODO: max_presences	?integer	the maximum amount of presences for the guild
 		//TODO: max_members	integer	the maximum amount of members for the guild
 		//TODO: widget_channel_id?	snowflake	the channel id for the server widget
@@ -87,35 +142,41 @@ namespace DisCXXord
 			this->banner = obj["banner"]->to<JsonString>().value();
 	}
 
-	const Role &Guild::getRole(const std::string &id) const
+	Role &Guild::getRole(const std::string &id)
 	{
-		for (const Role &role : this->roles)
+		for (Role &role : this->roles)
 			if (role.id == id)
 				return role;
 		//TODO: Try to get from API
 		throw RoleNotFoundException("Cannot find role " + id);
 	}
 
-	const Role &Guild::getRoleByName(const std::string &name) const
+	Role &Guild::getRoleByName(const std::string &name)
 	{
-		for (const Role &role : this->roles)
+		for (Role &role : this->roles)
 			if (role.name == name)
 				return role;
 		throw RoleNotFoundException("Cannot find role " + name);
 	}
 
-	const Member &Guild::getMember(const std::string &id) const
+	Member &Guild::getMember(const std::string &id)
 	{
-		for (const Member &member : this->members)
+		for (Member &member : this->members)
 			if (member.user.id == id)
 				return member;
-		//TODO: Try to get from API
-		throw MemberNotFoundException("Cannot find member " + id);
+		try {
+			auto val = this->_parent.makeApiRequest(GUILDS_ENDPT + this->id + MEMBER_ENDPT + id);
+
+			this->members.emplace_back(Member(*this, this->_parent.getUser(id), val->to<JsonObject>()));
+			return this->members.back();
+		} catch (APIErrorException &) {
+			throw MemberNotFoundException("Cannot find member " + id);
+		}
 	}
 
-	const Channel &Guild::getChannel(const std::string &id) const
+	Channel &Guild::getChannel(const std::string &id)
 	{
-		for (const Channel &channel : this->channels)
+		for (Channel &channel : this->channels)
 			if (channel.id == id)
 				return channel;
 		//TODO: Try to get from API

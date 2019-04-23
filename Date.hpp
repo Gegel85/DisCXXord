@@ -19,7 +19,7 @@ namespace DisCXXord
 		tm _timestamp;
 
 	public:
-		explicit Date(time_t time);
+		explicit Date(time_t time = 0);
 		explicit Date(std::string time);
 		std::string toISO() const;
 	};

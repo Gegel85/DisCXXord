@@ -45,6 +45,7 @@ namespace DisCXXord
 		bool embedsEnabled;
 		bool widgetEnabled;
 		bool available;
+		bool complete;
 		Date joinedAt;
 		MFALvl mfaLvl;
 		const User *owner;
@@ -69,10 +70,10 @@ namespace DisCXXord
 		std::map<std::string, int> permissions;
 
 		Guild(Client &client, JsonObject &obj);
-		const Role &getRole(const std::string &id) const;
-		const Role &getRoleByName(const std::string &name) const;
-		const Member &getMember(const std::string &id) const;
-		const Channel &getChannel(const std::string &id) const;
+		Role &getRole(const std::string &id);
+		Role &getRoleByName(const std::string &name);
+		Member &getMember(const std::string &id);
+		Channel &getChannel(const std::string &id);
 		int getPermissions(const std::string &id) const;
 	};
 }

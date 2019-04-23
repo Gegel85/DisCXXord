@@ -18,6 +18,6 @@ namespace DisCXXord
 
 	bool Snowflake::operator==(DisCXXord::Snowflake &comp)
 	{
-		return this->id == comp.id;
+		return this->id == comp.id && typeid(comp) == typeid(*this);
 	}
 }
