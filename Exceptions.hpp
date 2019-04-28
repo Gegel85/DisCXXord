@@ -119,6 +119,11 @@ namespace DisCXXord
 	public:
 		explicit APIErrorException(const std::string &msg) : BaseException(msg) {};
 	};
+
+	class EmptyValueException : public BaseException {
+	public:
+		explicit EmptyValueException(const std::string &msg) : BaseException(msg) {};
+	};
 }
 
 

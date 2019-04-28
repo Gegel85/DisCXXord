@@ -7,8 +7,8 @@
 
 
 #include <string>
-#include <optional>
 #include <JsonParser.hpp>
+#include "Optional.hpp"
 #include "Snowflake.hpp"
 
 namespace DisCXXord
@@ -34,11 +34,11 @@ namespace DisCXXord
 		bool mfaEnabled = false;
 		std::string username;
 		std::string discriminator;
-		std::optional<bool> verified;
-		std::optional<int> premium_type;
-		std::optional<std::string> email;
-		std::optional<std::string> locale;
-		std::optional<std::string> avatarHash;
+		Optional<bool> verified;
+		Optional<int> premium_type;
+		Optional<std::string> email;
+		Optional<std::string> locale;
+		Optional<std::string> avatarHash;
 
 		User(Client &client, JsonObject &obj);
 		int defaultAvatar() const;

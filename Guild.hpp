@@ -2,12 +2,12 @@
 #define DISCXXORD_GUILD_HPP
 
 
-#include <optional>
 #include "User.hpp"
 #include "Snowflake.hpp"
 #include "Role.hpp"
 #include "Channel.hpp"
 #include "Member.hpp"
+#include "Optional.hpp"
 
 namespace DisCXXord
 {
@@ -56,17 +56,17 @@ namespace DisCXXord
 		std::vector<Role> roles;
 		std::vector<Member> members;
 		std::vector<Channel> channels;
-		std::optional<Channel> afkChannel;
-		std::optional<Channel> embedsChannel;
-		std::optional<Channel> widgetChannel;
-		std::optional<Channel> systemChannel;
+		Optional<Channel> afkChannel;
+		Optional<Channel> embedsChannel;
+		Optional<Channel> widgetChannel;
+		Optional<Channel> systemChannel;
 		std::vector<std::string> features;
 		ExplicitContentFilterLvl exlicitContentFilter;
-		std::optional<std::string> icon;
-		std::optional<std::string> banner;
-		std::optional<std::string> splash;
-		std::optional<std::string> description;
-		std::optional<std::string> vanityURLCode;
+		Optional<std::string> icon;
+		Optional<std::string> banner;
+		Optional<std::string> splash;
+		Optional<std::string> description;
+		Optional<std::string> vanityURLCode;
 		std::map<std::string, int> permissions;
 
 		Guild(Client &client, JsonObject &obj);

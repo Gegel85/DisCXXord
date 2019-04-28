@@ -252,7 +252,7 @@ namespace DisCXXord
 		}
 	}
 
-	std::optional<std::string> Client::_timedGetAnswer(int time)
+	Optional<std::string> Client::_timedGetAnswer(int time)
 	{
 		FD_SET	set;
 		struct timeval	timestruct = {time, 0};
@@ -268,8 +268,7 @@ namespace DisCXXord
 	{
 		this->_logger.info(LIBNAME " version " VERSION);
 		this->_logger.debug("Getting current user");
-		this->_me.emplace(User(*this,
-				       this->makeApiRequest(USER_ME_ENDPT)->to<JsonObject>()));
+		this->_me.emplace(*this, this->makeApiRequest(USER_ME_ENDPT)->to<JsonObject>());
 		this->_logger.info("Connected on " + this->_me->tag());
 		this->_logger.debug("Fetching gateway URL");
 
@@ -282,7 +281,7 @@ namespace DisCXXord
 
 		this->_logger.debug("Waiting HELLO payload");
 
-		std::optional<std::string> answer = this->_timedGetAnswer(30);
+		Optional<std::string> answer = this->_timedGetAnswer(30);
 
 		if (!answer)
 			throw TimeoutException("Gateway didn't reply to the identify request");

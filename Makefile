@@ -22,7 +22,7 @@ OBJ =	$(SRC:%.cpp=%.o)
 
 CXX =	g++
 
-CXXFLAGS = -W -Wall -Wextra -std=c++17 -fPIC -I lib/json_parser/include
+CXXFLAGS = -W -Wall -Wextra -fPIC -I lib/json_parser/include
 
 LD_FLAGS = -L lib/json_parser -ljson_parser_cpp -ljson_parser -lssl
 

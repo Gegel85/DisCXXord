@@ -1,0 +1,13 @@
+#ifndef DISCXXORD_PERMISSIONOVERWRITE_HPP
+#define DISCXXORD_PERMISSIONOVERWRITE_HPP
+
+
+namespace DisCXXord
+{
+	class PermissionOverwrite {
+
+	};
+}
+
+
+#endif //DISCXXORD_PERMISSIONOVERWRITE_HPP

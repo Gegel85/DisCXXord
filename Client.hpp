@@ -7,9 +7,9 @@
 
 
 #include <thread>
-#include <optional>
 #include <functional>
 #include <JsonObject.hpp>
+#include "Optional.hpp"
 #include "SecuredWebSocket.hpp"
 #include "Logger.hpp"
 #include "User.hpp"
@@ -37,7 +37,7 @@ namespace DisCXXord
 		std::unique_ptr<JsonValue> makeApiRequest(const std::string &endpt, const std::string &method = "GET", const std::string &body = "");
 
 	private:
-		std::optional<std::string> _timedGetAnswer(int time);
+		Optional<std::string> _timedGetAnswer(int time);
 		void _connect();
 		void _heartbeatLoop();
 		void _handleWebSocket();
@@ -121,13 +121,13 @@ namespace DisCXXord
 		struct HeartbeatInfos {
 			size_t						_heartbeatInterval;
 			std::thread					_heartbeatThread;
-			std::optional<int>				_lastSValue;
+			Optional<int>				_lastSValue;
 			std::chrono::_V2::system_clock::time_point	_lastHeartbeat;
 			bool						_isAcknoledged;
 			int						_nbNotAcknoledge;
 		};
 
-		std::optional<User>	_me;
+		Optional<User>	_me;
 		std::vector<User *>	_cachedUsers;
 		std::vector<Guild *>	_cachedGuilds;
 		std::vector<std::string>_guilds;

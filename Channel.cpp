@@ -7,4 +7,9 @@ namespace DisCXXord
 		type(type)
 	{
 	}
+
+	bool Channel::is(DisCXXord::Channel::Type expected) const
+	{
+		return this->type == expected;
+	}
 }
