@@ -2,18 +2,16 @@
 
 namespace DisCXXord
 {
-	Member::Member(Guild &guild, User &user, JsonObject &object) :
+	Member::Member(Guild &guild, User &user, json object) :
 		guild(guild),
 		user(user),
-		joinedAt(object["joined_at"]->to<JsonString>().value())
+		joinedAt(object["joined_at"].get<std::string>())
 	{
-		try {
-			if (!object["nick"]->is<JsonNull>())
-				this->nick = object["nick"]->to<JsonString>().value();
-		} catch (std::out_of_range &) {
+		if (!object["nick"].is_null())
+			this->nick = object["nick"];
+		else
 			this->nick = this->user.username;
-		}
-		this->deafen = object["deaf"]->to<JsonBoolean>().value();
-		this->muted = object["mute"]->to<JsonBoolean>().value();
+		this->deafen = object["deaf"];
+		this->muted = object["mute"];
 	}
 }

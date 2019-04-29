@@ -7,9 +7,11 @@
 
 
 #include <string>
-#include <JsonParser.hpp>
 #include "Optional.hpp"
 #include "Snowflake.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace DisCXXord
 {
@@ -40,7 +42,7 @@ namespace DisCXXord
 		Optional<std::string> locale;
 		Optional<std::string> avatarHash;
 
-		User(Client &client, JsonObject &obj);
+		User(Client &client, json obj);
 		int defaultAvatar() const;
 		std::string tag() const;
 		std::string mentionString() const;

@@ -2,9 +2,11 @@
 #define DISCXXORD_ROLE_HPP
 
 
-#include <JsonParser.hpp>
 #include "Permissions.hpp"
 #include "Snowflake.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace DisCXXord
 {
@@ -20,7 +22,7 @@ namespace DisCXXord
 		std::string name;
 		Permissions permissions;
 
-		Role(Client &client, JsonObject &obj);
+		Role(Client &client, json obj);
 		bool hasPermission(unsigned perm);
 	};
 }

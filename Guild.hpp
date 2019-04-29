@@ -69,7 +69,7 @@ namespace DisCXXord
 		Optional<std::string> vanityURLCode;
 		std::map<std::string, int> permissions;
 
-		Guild(Client &client, JsonObject &obj);
+		Guild(Client &client, json obj);
 		Role &getRole(const std::string &id);
 		Role &getRoleByName(const std::string &name);
 		Member &getMember(const std::string &id);

@@ -1,3 +1,0 @@
-[submodule "lib/json_parser"]
-	path = lib/json_parser
-	url = https://github.com/Gegel85/json_parser

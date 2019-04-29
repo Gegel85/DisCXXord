@@ -19,7 +19,7 @@ namespace DisCXXord
 		std::string nick;
 		std::vector<Role *> roles;
 
-		Member(Guild &guild, User &user, JsonObject &object);
+		Member(Guild &guild, User &user, json object);
 	};
 }
 

@@ -5,45 +5,40 @@
 #include <ctime>
 #include "User.hpp"
 #include "endpoints.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace DisCXXord
 {
-	User::User(Client &client, JsonObject &obj) : Snowflake(client, obj)
+	User::User(Client &client, json obj) : Snowflake(client, obj)
 	{
-		this->username = obj["username"]->to<JsonString>().value();
-		this->discriminator = obj["discriminator"]->to<JsonString>().value();
+		this->username = obj["username"];
+		this->discriminator = obj["discriminator"];
 
-		try {
-			this->bot = obj["bot"]->to<JsonBoolean>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["bot"].is_null())
+			this->bot = obj["bot"];
 
-		try {
-			this->mfaEnabled = obj["mfa_enabled"]->to<JsonBoolean>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["mfa_enabled"].is_null())
+			this->mfaEnabled = obj["mfa_enabled"];
 
-		try {
-			this->verified = obj["verified"]->to<JsonBoolean>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["verified"].is_null())
+			this->verified = obj["verified"];
 
-		try {
-			this->premium_type = obj["premium_type"]->to<JsonNumber>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["premium_type"].is_null())
+			this->premium_type = obj["premium_type"];
 
-		try {
-			this->flags = obj["flags"]->to<JsonNumber>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["flags"].is_null())
+			this->flags = obj["flags"];
 
-		try {
-			if (!obj["email"]->is<JsonNull>())
-				this->email = obj["email"]->to<JsonString>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["email"].is_null())
+			this->email = obj["email"];
 
-		try {
-			this->locale = obj["locale"]->to<JsonString>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["locale"].is_null())
+			this->locale = obj["locale"];
 
-		if (!obj["avatar"]->is<JsonNull>())
-			this->avatarHash = obj["avatar"]->to<JsonString>().value();
+		if (!obj["avatar"].is_null())
+			this->avatarHash = obj["avatar"];
 	}
 
 	int User::defaultAvatar() const

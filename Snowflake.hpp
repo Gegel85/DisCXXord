@@ -3,8 +3,10 @@
 
 
 #include <string>
-#include <JsonObject.hpp>
+#include "nlohmann/json.hpp"
 #include "Date.hpp"
+
+using json = nlohmann::json;
 
 namespace DisCXXord
 {
@@ -18,7 +20,7 @@ namespace DisCXXord
 		const std::string id;
 		const Date createdAt;
 
-		Snowflake(Client &client, JsonObject &obj);
+		Snowflake(Client &client, json obj);
 		std::string timestamp() const;
 		bool operator==(Snowflake &);
 	};

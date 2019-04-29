@@ -2,16 +2,16 @@
 
 namespace DisCXXord
 {
-	Role::Role(Client &client, JsonObject &obj) :
+	Role::Role(Client &client, json obj) :
 		Snowflake(client, obj)
 	{
-		this->name = obj["name"]->to<JsonString>().value();
-		this->color = obj["color"]->to<JsonNumber>().value();
-		this->hoist = obj["hoist"]->to<JsonBoolean>().value();
-		this->pos = obj["position"]->to<JsonNumber>().value();
-		this->permissions = obj["permissions"]->to<JsonNumber>().value();
-		this->managed = obj["managed"]->to<JsonBoolean>().value();
-		this->mentionable = obj["mentionable"]->to<JsonBoolean>().value();
+		this->name = obj["name"];
+		this->color = obj["color"];
+		this->hoist = obj["hoist"];
+		this->pos = obj["position"];
+		this->managed = obj["managed"];
+		this->mentionable = obj["mentionable"];
+		this->permissions = static_cast<int>(obj["permissions"]);
 	}
 
 	bool Role::hasPermission(unsigned perm)

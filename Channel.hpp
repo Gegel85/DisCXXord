@@ -62,7 +62,7 @@ namespace DisCXXord
 		Optional<std::vector<User>> recipients;
 		Optional<std::vector<PermissionOverwrite>> permissions;
 
-		explicit Channel(Client &client, JsonObject &obj, Type type);
+		explicit Channel(Client &client, json obj, Type type);
 		virtual ~Channel() = default;
 	};
 }

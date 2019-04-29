@@ -3,7 +3,7 @@
 //
 
 #include <string>
-#include <JsonParser.hpp>
+#include "nlohmann/json.hpp"
 #include "defines.hpp"
 #include "Exceptions.hpp"
 #include "Client.hpp"
@@ -14,6 +14,8 @@
 #	include <sys/select.h>
 	typedef fd_set FD_SET;
 #endif
+
+using json = nlohmann::json;
 
 #ifdef __GNUG__
 #include <cxxabi.h>
@@ -91,6 +93,23 @@ namespace DisCXXord
 		return *this->_me;
 	}
 
+	User &Client::getUser(json user)
+	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
+		if (user.is_string())
+			return this->getUser(user.get<std::string>());
+		for (User *user_it : this->_cachedUsers)
+			if (user_it->id == user["id"])
+				return *user_it;
+		try {
+			this->_cachedUsers.emplace_back(new User(*this, user));
+			return *this->_cachedUsers.back();
+		} catch (APIErrorException &) {
+			throw UserNotFoundException("Cannot find user " + user["id"].get<std::string>());
+		}
+	}
+
 	User &Client::getUser(const std::string &id)
 	{
 		if (this->_disconnected)
@@ -99,25 +118,11 @@ namespace DisCXXord
 			if (user->id == id)
 				return *user;
 		try {
-			std::unique_ptr<JsonValue> val = this->makeApiRequest(
-				GET_USER_ENDPT"/" + id);
-
-			this->_cachedUsers.emplace_back(new User(*this, val->to<JsonObject>()));
+			this->_cachedUsers.emplace_back(new User(*this, this->makeApiRequest(GET_USER_ENDPT"/" + id)));
 			return *this->_cachedUsers.back();
 		} catch (APIErrorException &) {
 			throw UserNotFoundException("Cannot find user " + id);
 		}
-	}
-
-	User &Client::getUser(JsonObject &obj)
-	{
-		if (this->_disconnected)
-			throw DisconnectedException("You need to be connected to use this");
-		for (User *user : this->_cachedUsers)
-			if (user->id == obj["id"]->to<JsonString>().value())
-				return *user;
-		this->_cachedUsers.emplace_back(new User(*this, obj));
-		return *this->_cachedUsers.back();
 	}
 
 	Guild &Client::getGuild(const std::string &id)
@@ -128,10 +133,7 @@ namespace DisCXXord
 			if (guild->id == id)
 				return *guild;
 		try {
-			std::unique_ptr<JsonValue> val = this->makeApiRequest(
-				GUILDS_ENDPT"/" + id);
-
-			this->_cachedGuilds.emplace_back(new Guild(*this, val->to<JsonObject>()));
+			this->_cachedGuilds.emplace_back(new Guild(*this, this->makeApiRequest(GUILDS_ENDPT"/" + id)));
 			return *this->_cachedGuilds.back();
 		} catch (APIErrorException &) {
 			throw UserNotFoundException("Cannot find user " + id);
@@ -143,7 +145,7 @@ namespace DisCXXord
 		return this->_guilds;
 	}
 
-	std::unique_ptr<JsonValue> Client::makeApiRequest(const std::string &endpt, const std::string &method, const std::string &body)
+	json Client::makeApiRequest(const std::string &endpt, const std::string &method, const std::string &body)
 	{
 		Request::HttpRequest	result{
 			.method = method,
@@ -168,7 +170,7 @@ namespace DisCXXord
 			throw APIErrorException(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
 		}
 		this->_logger.debug(std::to_string(result.code) + " (" + result.codeName + "): \"" + result.body + "\"");
-		return JsonParser::parseString(result.body);
+		return json::parse(result.body);
 	}
 
 
@@ -206,13 +208,13 @@ namespace DisCXXord
 		this->_webSocket.send(payload);
 	}
 
-	void Client::_handlePayload(JsonObject &object)
+	void Client::_handlePayload(json &object)
 	{
-		switch (static_cast<int>(object["op"]->to<JsonNumber>().value())) {
+		switch (object["op"].get<int>()) {
 		case 0:
-			this->_hbInfos._lastSValue = object["s"]->to<JsonNumber>().value();
-			this->_dispatchEvents[object["t"]->to<JsonString>().value()](
-				*object["d"]
+			this->_hbInfos._lastSValue = object["s"];
+			this->_dispatchEvents[object["t"]](
+				object["d"]
 			);
 			break;
 		case 1:
@@ -238,16 +240,10 @@ namespace DisCXXord
 			FD_SET(this->_webSocket.getSockFd(), &set);
 			while (!this->_disconnected && timestruct.tv_sec) {
 				this->_logger.debug("Reading server answer");
-				std::string str = this->_webSocket.getAnswer();
-				try {
-					auto val = JsonParser::parseString(str);
-					auto &object = val->to<JsonObject>();
+				json object = json::parse(this->_webSocket.getAnswer());
 
-					this->_logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"]->to<JsonNumber>().value())));
-					this->_handlePayload(object);
-				} catch (JsonParser::InvalidJsonStringException &e) {
-					throw JsonParser::InvalidJsonStringException("Cannot parse Json received from server\r\n" + str + "\r\n" + e.what());
-				}
+				this->_logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"])));
+				this->_handlePayload(object);
 			}
 		}
 	}
@@ -268,13 +264,12 @@ namespace DisCXXord
 	{
 		this->_logger.info(LIBNAME " version " VERSION);
 		this->_logger.debug("Getting current user");
-		this->_me.emplace(*this, this->makeApiRequest(USER_ME_ENDPT)->to<JsonObject>());
+		this->_me.emplace(*this, this->makeApiRequest(USER_ME_ENDPT));
 		this->_logger.info("Connected on " + this->_me->tag());
 		this->_logger.debug("Fetching gateway URL");
 
-		auto val = this->makeApiRequest(GATEWAY_ENDPT);
-		auto &object = val->to<JsonObject>();
-		std::string url = object["url"]->to<JsonString>().value();
+		json object = this->makeApiRequest(GATEWAY_ENDPT);
+		std::string url = object["url"];
 
 		this->_logger.info("Connecting to Gateway");
 		this->_webSocket.connect(url.substr(6, url.size() - 6), 443);
@@ -285,14 +280,13 @@ namespace DisCXXord
 
 		if (!answer)
 			throw TimeoutException("Gateway didn't reply to the identify request");
-		auto value = JsonParser::parseString(*answer);
-		auto &obj = value->to<JsonObject>();
+		object = json::parse(*answer);
 
-		if (obj["op"]->to<JsonNumber>().value() == 10)
+		if (object["op"] == 10)
 			this->_logger.info("Received HELLO from gateway");
 		else
 			throw std::invalid_argument("Gateway didn't send Hello");
-		this->_hbInfos._heartbeatInterval = static_cast<size_t>(obj["d"]->to<JsonObject>()["heartbeat_interval"]->to<JsonNumber>().value());
+		this->_hbInfos._heartbeatInterval = static_cast<size_t>(object["d"]["heartbeat_interval"]);
 		this->_logger.debug("Default heartbeat interval is " + std::to_string(this->_hbInfos._heartbeatInterval));
 		this->_logger.debug("Sending Identify event");
 		this->_identify();
@@ -326,11 +320,11 @@ namespace DisCXXord
 		this->_treatWebSocketPayloads();
 	}
 
-	void Client::_ready(JsonValue &val)
+	void Client::_ready(json &val)
 	{
 		this->_guilds = {};
-		for (auto &elem : val.to<JsonObject>()["guilds"]->to<JsonArray>().value())
-			this->_guilds.emplace_back(elem->to<JsonObject>()["id"]->to<JsonString>().value());
+		for (auto &elem : val["guilds"])
+			this->_guilds.emplace_back(elem["id"]);
 		if (this->_handlers.ready)
 			try {
 				this->_handlers.ready(*this);
@@ -343,167 +337,167 @@ namespace DisCXXord
 			}
 	}
 
-	void Client::_resumed(JsonValue &val)
+	void Client::_resumed(json &val)
 	{
 
 	}
 
-	void Client::_channelCreate(JsonValue &val)
+	void Client::_channelCreate(json &val)
 	{
 
 	}
 
-	void Client::_channelUpdate(JsonValue &val)
+	void Client::_channelUpdate(json &val)
 	{
 
 	}
 
-	void Client::_channelDelete(JsonValue &val)
+	void Client::_channelDelete(json &val)
 	{
 
 	}
 
-	void Client::_channelPinsUpdate(JsonValue &val)
+	void Client::_channelPinsUpdate(json &val)
 	{
 
 	}
 
-	void Client::_guildCreate(JsonValue &val)
+	void Client::_guildCreate(json &val)
 	{
 		for (unsigned i = 0; i < this->_cachedGuilds.size(); i++)
-			if (this->_cachedGuilds[i]->id == val.to<JsonObject>()["id"]->to<JsonString>().value()) {
+			if (this->_cachedGuilds[i]->id == val["id"]) {
 				delete this->_cachedGuilds[i];
 				this->_cachedGuilds.erase(this->_cachedGuilds.begin() + i);
 			}
-		this->_cachedGuilds.emplace_back(new Guild(*this, val.to<JsonObject>()));
+		this->_cachedGuilds.emplace_back(new Guild(*this, val));
 	}
 
-	void Client::_guildUpdate(JsonValue &val)
+	void Client::_guildUpdate(json &val)
 	{
 
 	}
 
-	void Client::_guildDelete(JsonValue &val)
+	void Client::_guildDelete(json &val)
 	{
 
 	}
 
-	void Client::_guildBanAdd(JsonValue &val)
+	void Client::_guildBanAdd(json &val)
 	{
 
 	}
 
-	void Client::_guildBanRemove(JsonValue &val)
+	void Client::_guildBanRemove(json &val)
 	{
 
 	}
 
-	void Client::_guildEmojisUpdate(JsonValue &val)
+	void Client::_guildEmojisUpdate(json &val)
 	{
 
 	}
 
-	void Client::_guildIntegrationsUpdate(JsonValue &val)
+	void Client::_guildIntegrationsUpdate(json &val)
 	{
 
 	}
 
-	void Client::_guildMemberAdd(JsonValue &val)
+	void Client::_guildMemberAdd(json &val)
 	{
 
 	}
 
-	void Client::_guildMemberRemove(JsonValue &val)
+	void Client::_guildMemberRemove(json &val)
 	{
 
 	}
 
-	void Client::_guildMemberUpdate(JsonValue &val)
+	void Client::_guildMemberUpdate(json &val)
 	{
 
 	}
 
-	void Client::_guildMembersChunk(JsonValue &val)
+	void Client::_guildMembersChunk(json &val)
 	{
 
 	}
 
-	void Client::_guildRoleCreate(JsonValue &val)
+	void Client::_guildRoleCreate(json &val)
 	{
 
 	}
 
-	void Client::_guildRoleUpdate(JsonValue &val)
+	void Client::_guildRoleUpdate(json &val)
 	{
 
 	}
 
-	void Client::_guildRoleDelete(JsonValue &val)
+	void Client::_guildRoleDelete(json &val)
 	{
 
 	}
 
-	void Client::_messageCreate(JsonValue &val)
+	void Client::_messageCreate(json &val)
 	{
 
 	}
 
-	void Client::_messageUpdate(JsonValue &val)
+	void Client::_messageUpdate(json &val)
 	{
 
 	}
 
-	void Client::_messageDelete(JsonValue &val)
+	void Client::_messageDelete(json &val)
 	{
 
 	}
 
-	void Client::_messageDeleteBulk(JsonValue &val)
+	void Client::_messageDeleteBulk(json &val)
 	{
 
 	}
 
-	void Client::_messageReactionAdd(JsonValue &val)
+	void Client::_messageReactionAdd(json &val)
 	{
 
 	}
 
-	void Client::_messageReactionRemove(JsonValue &val)
+	void Client::_messageReactionRemove(json &val)
 	{
 
 	}
 
-	void Client::_messageReactionRemoveAll(JsonValue &val)
+	void Client::_messageReactionRemoveAll(json &val)
 	{
 
 	}
 
-	void Client::_presenceUpdate(JsonValue &val)
+	void Client::_presenceUpdate(json &val)
 	{
 
 	}
 
-	void Client::_typingStart(JsonValue &val)
+	void Client::_typingStart(json &val)
 	{
 
 	}
 
-	void Client::_userUpdate(JsonValue &val)
+	void Client::_userUpdate(json &val)
 	{
 
 	}
 
-	void Client::_voiceStateUpdate(JsonValue &val)
+	void Client::_voiceStateUpdate(json &val)
 	{
 
 	}
 
-	void Client::_voiceServerUpdate(JsonValue &val)
+	void Client::_voiceServerUpdate(json &val)
 	{
 
 	}
 
-	void Client::_webhooksUpdate(JsonValue &val)
+	void Client::_webhooksUpdate(json &val)
 	{
 
 	}

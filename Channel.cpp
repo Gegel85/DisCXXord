@@ -2,7 +2,7 @@
 
 namespace DisCXXord
 {
-	Channel::Channel(Client &client, JsonObject &obj, Type type) :
+	Channel::Channel(Client &client, json obj, Type type) :
 		Snowflake(client, obj),
 		type(type)
 	{

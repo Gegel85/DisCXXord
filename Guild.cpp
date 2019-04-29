@@ -5,126 +5,96 @@
 
 namespace DisCXXord
 {
-	Guild::Guild(Client &client, JsonObject &obj) :
+	Guild::Guild(Client &client, json obj) :
 		Snowflake(client, obj)
 	{
-		try {
-			this->available = !obj["unavailable"]->to<JsonBoolean>().value();
+		if (!obj["unavailable"].is_null()) {
+			this->available = !obj["unavailable"];
 
 			if (!this->available)
 				return;
-			this->joinedAt = Date(obj["joined_at"]->to<JsonString>().value());
+			this->joinedAt = Date(obj["joined_at"].get<std::string>());
 
-			this->large = obj["large"]->to<JsonBoolean>().value();
-			this->memberCount = obj["member_count"]->to<JsonNumber>().value();
+			this->large = obj["large"];
+			this->memberCount = obj["member_count"];
 
 			//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
 			//TODO: channels? *	array of channel objects	channels in the guild
 			//TODO: presences? *	array of partial presence update objects	presences of the users in the guild
 
-		} catch (std::out_of_range &) {
+		} else {
 			this->available = true;
 			this->complete = false;
 		}
 
-		try {
-			for (auto &val : obj["roles"]->to<JsonArray>().value()) {
-				try {
-					this->roles.emplace_back(
-						Role(client, val->to<JsonObject>())
-					);
-				} catch (std::out_of_range &e) {
-					throw std::out_of_range('\r' + std::string(e.what()));
-				}
-			}
-		} catch (std::out_of_range &e) {
-			if (e.what()[0] == '\r')
-				throw std::out_of_range(&e.what()[1]);
-			auto value = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + ROLES_ENDPT);
-			auto &array = value->to<JsonArray>();
-
-			for (auto &val : array.value())
+		if (!obj["roles"].is_null()) {
+			for (auto &val : obj["roles"]) {
 				this->roles.emplace_back(
-					Role(client, val->to<JsonObject>())
+					Role(client, val)
 				);
-		}
-
-		try {
-			auto &array = obj["members"]->to<JsonArray>();
-
-			for (auto &val : array.value()) {
-				try {
-					this->members.emplace_back(
-						Member(
-							*this,
-							client.getUser(
-								val->to<JsonObject>()["user"]->to<JsonObject>()
-							),
-							val->to<JsonObject>()
-						)
-					);
-				} catch (std::out_of_range &e) {
-					throw std::out_of_range('\r' + std::string(e.what()));
-				}
 			}
-		} catch (std::out_of_range &e) {
-			if (e.what()[0] == '\r')
-				throw std::out_of_range(&e.what()[1]);
-			auto value = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + MEMBER_ENDPT + "?limit=1000");
-			auto &array = value->to<JsonArray>();
+		} else {
+			json array = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + ROLES_ENDPT);
 
-			for (auto &val : array.value())
-				this->members.emplace_back(
-					Member(
-						*this,
-						client.getUser(
-							val->to<JsonObject>()["user"]->to<JsonObject>()
-						),
-						val->to<JsonObject>()
-					)
+			for (json &val : array)
+				this->roles.emplace_back(
+					Role(client, val)
 				);
 		}
 
-		this->name = obj["name"]->to<JsonString>().value();
 
-		if (!obj["icon"]->is<JsonNull>())
-			this->icon = obj["icon"]->to<JsonString>().value();
+		if (!obj["members"].is_null()) {
+			for (auto &val : obj["members"]) {
+				this->members.emplace_back(
+					Member(*this, client.getUser(val["user"]), val)
+				);
+			}
+		} else {
+			json array = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + MEMBER_ENDPT + "?limit=1000");
 
-		if (!obj["splash"]->is<JsonNull>())
-			this->splash = obj["splash"]->to<JsonString>().value();
+			for (auto &val : array)
+				this->members.emplace_back(
+					Member(*this, client.getUser(val["user"]), val)
+				);
+		}
 
-		try {
-			this->permissions[client.me().id] = obj["permissions"]->to<JsonNumber>().value();
-		} catch (std::out_of_range &) {}
+		this->name = obj["name"];
 
-		this->region = obj["region"]->to<JsonString>().value();
+		if (!obj["icon"].is_null())
+			this->icon = obj["icon"];
 
-		this->afkTimeout = obj["afk_timeout"]->to<JsonNumber>().value();
+		if (!obj["splash"].is_null())
+			this->splash = obj["splash"];
 
-		try {
-			this->embedsEnabled = obj["embed_enabled"]->to<JsonBoolean>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["permissions"].is_null())
+			this->permissions[client.me().id] = obj["permissions"];
+
+		this->region = obj["region"];
+
+		this->afkTimeout = obj["afk_timeout"];
+
+		if (!obj["embed_enabled"].is_null())
+			this->embedsEnabled = obj["embed_enabled"];
 
 		//TODO: embed_channel_id?	snowflake	if not null, the channel id that the widget will generate an invite to
 
-		this->verificationLevel = static_cast<VerificationLvl>(obj["verification_level"]->to<JsonNumber>().value());
-		this->defaultMsgNotif = static_cast<MsgNotifLvl>(obj["default_message_notifications"]->to<JsonNumber>().value());
-		this->exlicitContentFilter = static_cast<ExplicitContentFilterLvl>(obj["explicit_content_filter"]->to<JsonNumber>().value());
-		this->mfaLvl = static_cast<MFALvl>(obj["mfa_level"]->to<JsonNumber>().value());
+		this->verificationLevel = static_cast<VerificationLvl>(obj["verification_level"]);
+		this->defaultMsgNotif = static_cast<MsgNotifLvl>(obj["default_message_notifications"]);
+		this->exlicitContentFilter = static_cast<ExplicitContentFilterLvl>(obj["explicit_content_filter"]);
+		this->mfaLvl = static_cast<MFALvl>(obj["mfa_level"]);
 
 
 		//TODO: emojis	array of emoji objects	custom guild emojis
 
-		for (auto &val : obj["features"]->to<JsonArray>().value())
-			this->features.emplace_back(val->to<JsonString>().value());
+		for (auto &val : obj["features"])
+			this->features.emplace_back(val);
 
 		//TODO: application_id	?snowflake	application id of the guild creator if it is bot-created
 
-		try {
-			this->widgetEnabled = obj["widget_enabled"]->to<JsonBoolean>().value();
-		} catch (std::out_of_range &) {}
+		if (!obj["widget_enabled"].is_null())
+			this->widgetEnabled = obj["widget_enabled"];
 
-		this->owner = &client.getUser(obj["owner_id"]->to<JsonString>().value());
+		this->owner = &client.getUser(obj["owner_id"]);
 
 		//TODO: max_presences	?integer	the maximum amount of presences for the guild
 		//TODO: max_members	integer	the maximum amount of members for the guild
@@ -132,14 +102,14 @@ namespace DisCXXord
 		//TODO: system_channel_id	?snowflake	the id of the channel to which system messages are sent
 		//TODO: afk_channel_id		?snowflake	id of afk channel
 
-		if (!obj["vanity_url_code"]->is<JsonNull>())
-			this->vanityURLCode = obj["vanity_url_code"]->to<JsonString>().value();
+		if (!obj["vanity_url_code"].is_null())
+			this->vanityURLCode = obj["vanity_url_code"];
 
-		if (!obj["description"]->is<JsonNull>())
-			this->description = obj["description"]->to<JsonString>().value();
+		if (!obj["description"].is_null())
+			this->description = obj["description"];
 
-		if (!obj["banner"]->is<JsonNull>())
-			this->banner = obj["banner"]->to<JsonString>().value();
+		if (!obj["banner"].is_null())
+			this->banner = obj["banner"];
 	}
 
 	Role &Guild::getRole(const std::string &id)
@@ -165,9 +135,9 @@ namespace DisCXXord
 			if (member.user.id == id)
 				return member;
 		try {
-			auto val = this->_parent.makeApiRequest(GUILDS_ENDPT + this->id + MEMBER_ENDPT + id);
+			json val = this->_parent.makeApiRequest(GUILDS_ENDPT + this->id + MEMBER_ENDPT + id);
 
-			this->members.emplace_back(Member(*this, this->_parent.getUser(id), val->to<JsonObject>()));
+			this->members.emplace_back(Member(*this, this->_parent.getUser(id), val));
 			return this->members.back();
 		} catch (APIErrorException &) {
 			throw MemberNotFoundException("Cannot find member " + id);

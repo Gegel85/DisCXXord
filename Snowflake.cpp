@@ -1,12 +1,13 @@
-#include <JsonObject.hpp>
-#include <JsonString.hpp>
+#include "nlohmann/json.hpp"
 #include "Snowflake.hpp"
+
+using json = nlohmann::json;
 
 namespace DisCXXord
 {
-	Snowflake::Snowflake(Client &client, JsonObject &obj) :
+	Snowflake::Snowflake(Client &client, json obj) :
 		_parent(client),
-		id(obj["id"]->to<JsonString>().value()),
+		id(obj["id"]),
 		createdAt((std::stoll(this->id) >> 22) + 1420070400000)
 	{
 	}
