@@ -10,6 +10,7 @@
 #include "Optional.hpp"
 #include "Snowflake.hpp"
 #include "nlohmann/json.hpp"
+#include "PartialUser.hpp"
 
 using json = nlohmann::json;
 
@@ -17,7 +18,7 @@ namespace DisCXXord
 {
 	class Client;
 
-	class User : public Snowflake {
+	class User : public PartialUser {
 	public:
 		enum Flag {
 			NONE		= 0,
@@ -32,15 +33,12 @@ namespace DisCXXord
 		};
 
 		int flags = 0;
-		bool bot = false;
 		bool mfaEnabled = false;
-		std::string username;
 		std::string discriminator;
 		Optional<bool> verified;
 		Optional<int> premium_type;
 		Optional<std::string> email;
 		Optional<std::string> locale;
-		Optional<std::string> avatarHash;
 
 		User(Client &client, json obj);
 		int defaultAvatar() const;

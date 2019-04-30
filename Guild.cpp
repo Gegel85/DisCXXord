@@ -19,7 +19,11 @@ namespace DisCXXord
 			this->memberCount = obj["member_count"];
 
 			//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
-			//TODO: channels? *	array of channel objects	channels in the guild
+
+			for (auto &val : obj["channels"]) {
+				this->channels.emplace_back(&this->_parent.getChannel(val));
+			}
+
 			//TODO: presences? *	array of partial presence update objects	presences of the users in the guild
 
 		} else {
@@ -29,33 +33,25 @@ namespace DisCXXord
 
 		if (!obj["roles"].is_null()) {
 			for (auto &val : obj["roles"]) {
-				this->roles.emplace_back(
-					Role(client, val)
-				);
+				this->roles.emplace_back(client, val);
 			}
 		} else {
 			json array = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + ROLES_ENDPT);
 
 			for (json &val : array)
-				this->roles.emplace_back(
-					Role(client, val)
-				);
+				this->roles.emplace_back(client, val);
 		}
 
 
 		if (!obj["members"].is_null()) {
 			for (auto &val : obj["members"]) {
-				this->members.emplace_back(
-					Member(*this, client.getUser(val["user"]), val)
-				);
+				this->members.emplace_back(*this, client.getUser(val["user"]), val);
 			}
 		} else {
 			json array = client.makeApiRequest(GUILDS_ENDPT"/" + this->id + MEMBER_ENDPT + "?limit=1000");
 
 			for (auto &val : array)
-				this->members.emplace_back(
-					Member(*this, client.getUser(val["user"]), val)
-				);
+				this->members.emplace_back(*this, client.getUser(val["user"]), val);
 		}
 
 		this->name = obj["name"];
@@ -137,7 +133,7 @@ namespace DisCXXord
 		try {
 			json val = this->_parent.makeApiRequest(GUILDS_ENDPT + this->id + MEMBER_ENDPT + id);
 
-			this->members.emplace_back(Member(*this, this->_parent.getUser(id), val));
+			this->members.emplace_back(*this, this->_parent.getUser(id), val);
 			return this->members.back();
 		} catch (APIErrorException &) {
 			throw MemberNotFoundException("Cannot find member " + id);
@@ -146,11 +142,19 @@ namespace DisCXXord
 
 	Channel &Guild::getChannel(const std::string &id)
 	{
-		for (Channel &channel : this->channels)
-			if (channel.id == id)
-				return channel;
-		//TODO: Try to get from API
-		throw ChannelNotFoundException("Connot find channel " + id);
+		for (Channel *channel : this->channels)
+			if (channel->id == id)
+				return *channel;
+
+		json val = this->_parent.makeApiRequest(GUILDS_ENDPT + this->id + CHANNEL_ENDPT);
+
+		for (auto &value : val) {
+			if (value["id"] == id) {
+				this->channels.emplace_back(&this->_parent.getChannel(val));
+				return *this->channels.back();
+			}
+		}
+		throw ChannelNotFoundException("Cannot find channel " + id);
 	}
 
 	int Guild::getPermissions(const std::string &id) const

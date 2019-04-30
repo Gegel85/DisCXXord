@@ -115,9 +115,22 @@ namespace DisCXXord
 		explicit InvalidURLException(const std::string &msg) : BaseException(msg) {};
 	};
 
-	class APIErrorException : public BaseException {
+	class InvalidChannelException : public BaseException {
 	public:
-		explicit APIErrorException(const std::string &msg) : BaseException(msg) {};
+		explicit InvalidChannelException(const std::string &msg) : BaseException(msg) {};
+	};
+
+	class APIErrorException : public BaseException {
+	private:
+		int _code;
+		std::string _value;
+
+	public:
+		explicit APIErrorException(const std::string &msg, const std::string &val, int code) :
+			BaseException(msg),
+			_code(code), _value(val) {};
+		std::string getBody() { return this->_value; };
+		int getCode() { return this->_code; };
 	};
 
 	class EmptyValueException : public BaseException {

@@ -7,7 +7,11 @@
 namespace DisCXXord
 {
 	class CategoryChannel : public Channel {
+	public:
+		CategoryChannel(Client &client, json val);
+		~CategoryChannel() override = default;
 
+		Message send(const Embed &embed, const std::string &content) override;
 	};
 }
 

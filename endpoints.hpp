@@ -10,5 +10,7 @@
 #define GUILDS_ENDPT	"/guilds"
 #define MEMBER_ENDPT	"/members"
 #define ROLES_ENDPT	"/roles"
+#define CHANNEL_ENDPT	"/channels"
+#define MSG_ENDPT	"/messages"
 
 #endif

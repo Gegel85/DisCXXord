@@ -4,12 +4,15 @@
 
 #include "Snowflake.hpp"
 #include "Channel.hpp"
-#include "Guild.hpp"
 
 namespace DisCXXord
 {
 	class TextChannel : public Channel {
 	public:
+		TextChannel(Client &client, json val);
+		~TextChannel() override = default;
+
+		Message send(const Embed &embed, const std::string &content) override;
 	};
 }
 

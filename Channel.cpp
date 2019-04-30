@@ -12,4 +12,14 @@ namespace DisCXXord
 	{
 		return this->type == expected;
 	}
+
+	Message Channel::send(const DisCXXord::Embed &embed)
+	{
+		return this->send(embed, "");
+	}
+
+	Message Channel::send(const std::string &content)
+	{
+		return this->send({}, content);
+	}
 }

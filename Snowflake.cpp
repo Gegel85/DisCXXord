@@ -8,7 +8,7 @@ namespace DisCXXord
 	Snowflake::Snowflake(Client &client, json obj) :
 		_parent(client),
 		id(obj["id"]),
-		createdAt((std::stoll(this->id) >> 22) + 1420070400000)
+		createdAt{static_cast<time_t>((std::stoll(this->id) >> 22) + 1420070400000)}
 	{
 	}
 

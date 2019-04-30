@@ -9,6 +9,8 @@
 #include "Client.hpp"
 #include "Request.hpp"
 #include "endpoints.hpp"
+#include "TextChannel.hpp"
+#include "VoiceChannel.hpp"
 
 #ifndef _WINDOWS_DISCXXORD
 #	include <sys/select.h>
@@ -26,7 +28,11 @@ std::string getLastExceptionName()
 
 	if (!abi::__cxa_current_exception_type())
 		return "No exception";
-	return abi::__cxa_demangle(abi::__cxa_current_exception_type()->name(), nullptr, nullptr, &status);
+	auto val = abi::__cxa_current_exception_type();
+
+	if (!val)
+		return "No exception";
+	return abi::__cxa_demangle(val->name(), nullptr, nullptr, &status);
 }
 
 #endif
@@ -65,7 +71,7 @@ namespace DisCXXord
 			this->_handleWebSocket();
 		} catch (std::exception &e) {
 			#ifdef __GNUG__
-			this->_logger.critical("Caught exception: " + getLastExceptionName() + "(" + e.what() + ")");
+			this->_logger.critical("Caught exception: " + getLastExceptionName() + ": " + e.what());
 			#else
 			this->_logger.critical("Caught exception: " + e.what());
 			#endif
@@ -140,8 +146,40 @@ namespace DisCXXord
 		}
 	}
 
+	Channel &Client::getChannel(json val)
+	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
+		for (Channel *channel : this->_cachedChannels)
+			if (channel->id == val["id"])
+				return *channel;
+		try {
+			this->_cachedChannels.emplace_back(this->_createChannel(val));
+			return *this->_cachedChannels.back();
+		} catch (APIErrorException &) {
+			throw ChannelNotFoundException("Cannot find channel " + val["id"].get<std::string>());
+		}
+	}
+
+	Channel &Client::getChannel(const std::string &id)
+	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
+		for (Channel *channel : this->_cachedChannels)
+			if (channel->id == id)
+				return *channel;
+		try {
+			this->_cachedChannels.emplace_back(this->_createChannel(this->makeApiRequest(CHANNEL_ENDPT"/" + id)));
+			return *this->_cachedChannels.back();
+		} catch (APIErrorException &) {
+			throw ChannelNotFoundException("Cannot find channel " + id);
+		}
+	}
+
 	const std::vector<std::string> &Client::guilds()
 	{
+		if (this->_disconnected)
+			throw DisconnectedException("You need to be connected to use this");
 		return this->_guilds;
 	}
 
@@ -167,7 +205,7 @@ namespace DisCXXord
 		//TODO: Handle global rate limit
 		if (result.code >= 400) {
 			this->_logger.error(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
-			throw APIErrorException(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
+			throw APIErrorException(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName, result.body, result.code);
 		}
 		this->_logger.debug(std::to_string(result.code) + " (" + result.codeName + "): \"" + result.body + "\"");
 		return json::parse(result.body);
@@ -176,6 +214,22 @@ namespace DisCXXord
 
 
 //Private
+	Channel *Client::_createChannel(json value)
+	{
+		auto type = static_cast<Channel::Type>(value["type"]);
+
+		switch (type) {
+		case Channel::GUILD_TEXT:
+			return new TextChannel(*this, value);
+		case Channel::GUILD_CATEGORY:
+			return new CategoryChannel(*this, value);
+		case Channel::GUILD_VOICE:
+			return new VoiceChannel(*this, value);
+		default:
+			throw InvalidChannelException("Cannot create a channel of type " + std::to_string(type) + " (" + Channel::typeToString(type) + ")");
+		}
+	}
+
 	void Client::_heartbeat(bool waitAnswer)
 	{
 		std::string	payload = "{"
@@ -330,7 +384,7 @@ namespace DisCXXord
 				this->_handlers.ready(*this);
 			} catch (std::exception &e) {
 				#ifdef __GNUG__
-				this->_logger.error("Caught exception in onready function: " + getLastExceptionName() + "(" + e.what() + ")");
+				this->_logger.error("Caught exception in onReady function: " + getLastExceptionName() + ": " + e.what());
 				#else
 				this->_logger.error("Caught exception in onready function: " + e.what());
 				#endif
@@ -439,7 +493,18 @@ namespace DisCXXord
 
 	void Client::_messageCreate(json &val)
 	{
-
+		for (auto &elem : val["guilds"])
+			this->_guilds.emplace_back(elem["id"]);
+		if (this->_handlers.ready)
+			try {
+				this->_handlers.ready(*this);
+			} catch (std::exception &e) {
+				#ifdef __GNUG__
+				this->_logger.error("Caught exception in onMessageCreate function: " + getLastExceptionName() + ": " + e.what());
+				#else
+				this->_logger.error("Caught exception in onready function: " + e.what());
+				#endif
+			}
 	}
 
 	void Client::_messageUpdate(json &val)

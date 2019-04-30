@@ -11,13 +11,15 @@ using json = nlohmann::json;
 
 namespace DisCXXord
 {
-	User::User(Client &client, json obj) : Snowflake(client, obj)
+	User::User(Client &client, json obj) :
+		PartialUser(client, obj)
 	{
-		this->username = obj["username"];
 		this->discriminator = obj["discriminator"];
 
 		if (!obj["bot"].is_null())
 			this->bot = obj["bot"];
+		else
+			this->bot = false;
 
 		if (!obj["mfa_enabled"].is_null())
 			this->mfaEnabled = obj["mfa_enabled"];
@@ -36,9 +38,6 @@ namespace DisCXXord
 
 		if (!obj["locale"].is_null())
 			this->locale = obj["locale"];
-
-		if (!obj["avatar"].is_null())
-			this->avatarHash = obj["avatar"];
 	}
 
 	int User::defaultAvatar() const

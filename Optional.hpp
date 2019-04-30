@@ -3,6 +3,9 @@
 
 
 #include "Exceptions.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace DisCXXord
 {
@@ -10,9 +13,12 @@ namespace DisCXXord
 	class Optional {
 	private:
 		type	*_value;
+		bool	_destroy = true;
 
 	public:
 		Optional() : _value(nullptr) {};
+		Optional(json val) : _value(val.is_null() ? nullptr : new type(val)) {};
+		Optional(type *val) : _value(val), _destroy(false) {};
 		Optional(type &&val) : _value(new type(val)) {};
 		~Optional() {
 			this->destroy();
@@ -53,11 +59,22 @@ namespace DisCXXord
 			return *this;
 		};
 
+		Optional<type> &operator=(json val)
+		{
+			this->destroy();
+			if (val.is_null())
+				this->_value = nullptr;
+			else
+				this->_value = new type(val);
+			return *this;
+		};
+
 		void destroy()
 		{
 			if (!*this)
 				return;
-			delete this->_value;
+			if (this->_destroy)
+				delete this->_value;
 			this->_value = nullptr;
 		};
 

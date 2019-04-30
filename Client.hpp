@@ -30,6 +30,8 @@ namespace DisCXXord
 		User &getUser(json user);
 		User &getUser(const std::string &id);
 		Guild &getGuild(const std::string &id);
+		Channel &getChannel(json val);
+		Channel &getChannel(const std::string &id);
 		const std::vector<std::string> &guilds();
 		void setHandlers(clientHandlers handl);
 		void disconnect();
@@ -39,6 +41,7 @@ namespace DisCXXord
 
 	private:
 		Optional<std::string> _timedGetAnswer(int time);
+		Channel *_createChannel(json value);
 		void _connect();
 		void _heartbeatLoop();
 		void _handleWebSocket();
@@ -131,6 +134,7 @@ namespace DisCXXord
 		Optional<User>	_me;
 		std::vector<User *>	_cachedUsers;
 		std::vector<Guild *>	_cachedGuilds;
+		std::vector<Channel *>	_cachedChannels;
 		std::vector<std::string>_guilds;
 		std::string 		_token;
 		SecuredWebSocket	_webSocket;

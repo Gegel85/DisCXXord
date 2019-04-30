@@ -17,6 +17,15 @@ SRC =	SecuredSocket.cpp	\
 		Member.cpp			\
 		Request.cpp			\
 		Permissions.cpp		\
+		Embed.cpp			\
+		PartialUser.cpp		\
+		Attachement.cpp		\
+		Reaction.cpp		\
+		Message.cpp			\
+		TextChannel.cpp		\
+		CategoryChannel.cpp	\
+		VoiceChannel.cpp	\
+		Channel.cpp			\
 
 OBJ =	$(SRC:%.cpp=%.o)
 
