@@ -11,6 +11,7 @@
 #include "endpoints.hpp"
 #include "TextChannel.hpp"
 #include "VoiceChannel.hpp"
+#include "PrivateChannel.hpp"
 
 #ifndef _WINDOWS_DISCXXORD
 #	include <sys/select.h>
@@ -142,11 +143,11 @@ namespace DisCXXord
 			this->_cachedGuilds.emplace_back(new Guild(*this, this->makeApiRequest(GUILDS_ENDPT"/" + id)));
 			return *this->_cachedGuilds.back();
 		} catch (APIErrorException &) {
-			throw UserNotFoundException("Cannot find user " + id);
+			throw GuildNotFoundException("Cannot find guild " + id);
 		}
 	}
 
-	Channel &Client::getChannel(json val)
+	Channel &Client::getChannel(json val, Guild &guild)
 	{
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
@@ -154,7 +155,7 @@ namespace DisCXXord
 			if (channel->id == val["id"])
 				return *channel;
 		try {
-			this->_cachedChannels.emplace_back(this->_createChannel(val));
+			this->_cachedChannels.emplace_back(this->_createChannel(val, guild));
 			return *this->_cachedChannels.back();
 		} catch (APIErrorException &) {
 			throw ChannelNotFoundException("Cannot find channel " + val["id"].get<std::string>());
@@ -204,8 +205,8 @@ namespace DisCXXord
 		//TODO: Handle 429 and 502
 		//TODO: Handle global rate limit
 		if (result.code >= 400) {
-			this->_logger.error(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
-			throw APIErrorException(API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName, result.body, result.code);
+			this->_logger.error(method + ": " API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
+			throw APIErrorException(method + ": " API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName, result.body, result.code);
 		}
 		this->_logger.debug(std::to_string(result.code) + " (" + result.codeName + "): \"" + result.body + "\"");
 		return json::parse(result.body);
@@ -214,6 +215,22 @@ namespace DisCXXord
 
 
 //Private
+	Channel *Client::_createChannel(json value, Guild &guild)
+	{
+		auto type = static_cast<Channel::Type>(value["type"]);
+
+		switch (type) {
+			case Channel::GUILD_TEXT:
+				return new TextChannel(*this, value, guild);
+			case Channel::GUILD_CATEGORY:
+				return new CategoryChannel(*this, value, guild);
+			case Channel::GUILD_VOICE:
+				return new VoiceChannel(*this, value, guild);
+			default:
+				throw InvalidChannelException("Cannot create a channel of type " + std::to_string(type) + " (" + Channel::typeToString(type) + ") in a guild");
+		}
+	}
+
 	Channel *Client::_createChannel(json value)
 	{
 		auto type = static_cast<Channel::Type>(value["type"]);
@@ -225,6 +242,8 @@ namespace DisCXXord
 			return new CategoryChannel(*this, value);
 		case Channel::GUILD_VOICE:
 			return new VoiceChannel(*this, value);
+		case Channel::DM:
+			return new PrivateChannel(*this, value);
 		default:
 			throw InvalidChannelException("Cannot create a channel of type " + std::to_string(type) + " (" + Channel::typeToString(type) + ")");
 		}

@@ -18,8 +18,7 @@ namespace DisCXXord
 		std::string		content;
 		PartialUser		author;
 		Optional<Member>	member;
-		Guild			&guild;
-		Date			createAt;
+		Optional<Guild>		guild;
 		Optional<Date>		editedAt;
 		bool			tts;
 		bool			mentionEveryone;
@@ -29,9 +28,10 @@ namespace DisCXXord
 		std::vector<Embed>	embeds;
 
 
-		Message(json val);
+		Message(Client &client, json val);
 	};
 }
 
+#include "Guild.hpp"
 
 #endif //DISCXXORD_MESSAGE_HPP

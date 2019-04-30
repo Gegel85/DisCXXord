@@ -9,11 +9,12 @@ namespace DisCXXord
 {
 	class VoiceChannel : public Channel {
 	public:
+		VoiceChannel(Client &client, json val, Guild &guild);
 		VoiceChannel(Client &client, json val);
 		~VoiceChannel() override = default;
 
 		Message send(const Embed &embed, const std::string &content) override;
-
+		Message getMessage(const std::string &id) override;
 	};
 }
 

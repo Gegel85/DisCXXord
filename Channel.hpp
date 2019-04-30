@@ -66,6 +66,7 @@ namespace DisCXXord
 		Message send(const Embed &embed);
 		Message send(const std::string &content);
 		virtual Message send(const Embed &embed, const std::string &content) = 0;
+		virtual Message getMessage(const std::string &id) = 0;
 
 		Optional<int> pos;
 		Optional<int> rateLimit;

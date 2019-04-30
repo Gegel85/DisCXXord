@@ -12,6 +12,7 @@
 namespace DisCXXord
 {
 	class Client;
+	class Channel;
 
 	class Guild : public Snowflake {
 	public:

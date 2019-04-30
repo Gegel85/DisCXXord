@@ -4,28 +4,30 @@ WINSONAME =	libdisc++ord-dynamic.dll
 
 LINSONAME =	libdisc++ord-dynamic.so
 
-SRC =	SecuredSocket.cpp	\
-		SecuredWebSocket.cpp\
-		Socket.cpp			\
-		Logger.cpp			\
-		Client.cpp			\
-		User.cpp			\
-		Snowflake.cpp		\
-		Date.cpp			\
-		Guild.cpp			\
-		Role.cpp			\
-		Member.cpp			\
-		Request.cpp			\
-		Permissions.cpp		\
-		Embed.cpp			\
-		PartialUser.cpp		\
-		Attachement.cpp		\
-		Reaction.cpp		\
-		Message.cpp			\
-		TextChannel.cpp		\
-		CategoryChannel.cpp	\
-		VoiceChannel.cpp	\
-		Channel.cpp			\
+SRC =	SecuredSocket.cpp		\
+		SecuredWebSocket.cpp	\
+		Socket.cpp				\
+		Logger.cpp				\
+		Client.cpp				\
+		User.cpp				\
+		Snowflake.cpp			\
+		Date.cpp				\
+		Guild.cpp				\
+		Role.cpp				\
+		Member.cpp				\
+		Request.cpp				\
+		Permissions.cpp			\
+		Embed.cpp				\
+		PartialUser.cpp			\
+		Attachement.cpp			\
+		Reaction.cpp			\
+		Message.cpp				\
+		TextChannel.cpp			\
+		CategoryChannel.cpp		\
+		VoiceChannel.cpp		\
+		Channel.cpp				\
+		PrivateChannel.cpp		\
+		PermissionOverwrite.cpp	\
 
 OBJ =	$(SRC:%.cpp=%.o)
 

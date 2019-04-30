@@ -52,20 +52,29 @@ namespace DisCXXord
 			throw EmptyValueException("operator->");
 		};
 
-		Optional<type> &operator=(const type &val)
+		Optional<type> &operator=(const type &new_obj)
 		{
 			this->destroy();
-			this->_value = new type(val);
+			this->_value = new type(new_obj);
+			this->_destroy = true;
 			return *this;
 		};
 
-		Optional<type> &operator=(json val)
+		Optional<type> &operator=(type *new_ptr)
 		{
 			this->destroy();
-			if (val.is_null())
+			this->_value = new_ptr;
+			this->_destroy = false;
+			return *this;
+		};
+
+		Optional<type> &operator=(json new_json)
+		{
+			this->destroy();
+			if (new_json.is_null())
 				this->_value = nullptr;
 			else
-				this->_value = new type(val);
+				this->_value = new type(new_json);
 			return *this;
 		};
 

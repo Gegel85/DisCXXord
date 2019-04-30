@@ -22,6 +22,7 @@ namespace DisCXXord
 	public:
 		struct clientHandlers {
 			void (*ready)(Client &);
+			void (*messageCreate)(Client &, Message &);
 		};
 
 		explicit Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::INFO);
@@ -30,7 +31,7 @@ namespace DisCXXord
 		User &getUser(json user);
 		User &getUser(const std::string &id);
 		Guild &getGuild(const std::string &id);
-		Channel &getChannel(json val);
+		Channel &getChannel(json val, Guild &guild);
 		Channel &getChannel(const std::string &id);
 		const std::vector<std::string> &guilds();
 		void setHandlers(clientHandlers handl);
@@ -42,6 +43,7 @@ namespace DisCXXord
 	private:
 		Optional<std::string> _timedGetAnswer(int time);
 		Channel *_createChannel(json value);
+		Channel *_createChannel(json value, Guild &guild);
 		void _connect();
 		void _heartbeatLoop();
 		void _handleWebSocket();

@@ -108,6 +108,11 @@ namespace DisCXXord
 	class GuildNotFoundException : public NotFoundException {
 	public:
 		explicit GuildNotFoundException(const std::string &msg) : NotFoundException(msg) {};
+	};;
+
+	class MessageNotFoundException : public NotFoundException {
+	public:
+		explicit MessageNotFoundException(const std::string &msg) : NotFoundException(msg) {};
 	};
 
 	class InvalidURLException : public BaseException {

@@ -24,6 +24,8 @@ namespace DisCXXord
 
 		EmbedFooter() = default;
 		EmbedFooter(json obj);
+
+		std::string dump();
 	};
 
 	struct EmbedImage {
@@ -34,6 +36,8 @@ namespace DisCXXord
 
 		EmbedImage() = default;
 		EmbedImage(json obj);
+
+		std::string dump();
 	};
 
 	struct EmbedVideo {
@@ -43,6 +47,8 @@ namespace DisCXXord
 
 		EmbedVideo() = default;
 		EmbedVideo(json obj);
+
+		std::string dump();
 	};
 
 	struct EmbedProvider {
@@ -51,6 +57,8 @@ namespace DisCXXord
 
 		EmbedProvider() = default;
 		EmbedProvider(json obj);
+
+		std::string dump();
 	};
 
 	struct EmbedAuthor {
@@ -61,6 +69,8 @@ namespace DisCXXord
 
 		EmbedAuthor() = default;
 		EmbedAuthor(json obj);
+
+		std::string dump();
 	};
 
 	struct EmbedField {
@@ -70,6 +80,8 @@ namespace DisCXXord
 
 		EmbedField() = default;
 		EmbedField(json obj);
+
+		std::string dump();
 	};
 
 	struct Embed {
@@ -79,16 +91,18 @@ namespace DisCXXord
 		Optional<std::string>	url;
 		Optional<Date>		timestamp;
 		Optional<int>		color;
-		Optional<EmbedFooter>	footer;
-		Optional<EmbedImage>	image;
-		Optional<EmbedImage>	thumbnail;
-		Optional<EmbedVideo>	video;
-		Optional<EmbedProvider>	provider;
-		Optional<EmbedAuthor>	author;
+		EmbedFooter		footer;
+		EmbedImage		image;
+		EmbedImage		thumbnail;
+		EmbedVideo		video;
+		EmbedProvider		provider;
+		EmbedAuthor		author;
 		std::vector<EmbedField>	fields;
 
 		Embed() = default;
 		Embed(json obj);
+
+		std::string dump();
 	};
 }
 

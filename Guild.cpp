@@ -21,7 +21,7 @@ namespace DisCXXord
 			//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
 
 			for (auto &val : obj["channels"]) {
-				this->channels.emplace_back(&this->_parent.getChannel(val));
+				this->channels.emplace_back(&this->_parent.getChannel(val, *this));
 			}
 
 			//TODO: presences? *	array of partial presence update objects	presences of the users in the guild
