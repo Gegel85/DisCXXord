@@ -38,6 +38,8 @@ std::string getLastExceptionName()
 
 #endif
 
+#include <iostream>
+
 namespace DisCXXord
 {
 //Public
@@ -512,11 +514,10 @@ namespace DisCXXord
 
 	void Client::_messageCreate(json &val)
 	{
-		for (auto &elem : val["guilds"])
-			this->_guilds.emplace_back(elem["id"]);
-		if (this->_handlers.ready)
+		std::cout << val.dump(4) << std::endl;
+		if (this->_handlers.messageCreate)
 			try {
-				this->_handlers.ready(*this);
+				//this->_handlers.messageCreate(*this);
 			} catch (std::exception &e) {
 				#ifdef __GNUG__
 				this->_logger.error("Caught exception in onMessageCreate function: " + getLastExceptionName() + ": " + e.what());

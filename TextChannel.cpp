@@ -13,6 +13,14 @@ namespace DisCXXord
 		this->position = val["position"];
 		this->nsfw = val["nsfw"];
 
+		Channel::pos = &this->position;
+		Channel::nsfw = &this->nsfw;
+		Channel::name = &this->name;
+		Channel::topic = &this->topic;
+		Channel::guild = &this->guild;
+		Channel::rateLimit = &this->rateLimit;
+		Channel::permissions = &this->permissions;
+
 		if (!val["last_message_id"].is_null())
 			try {
 				this->lastMessage = this->getMessage(val["last_message_id"]);
@@ -29,13 +37,6 @@ namespace DisCXXord
 
 		for (auto &obj : val["permission_overwrites"])
 			this->permissions.emplace_back(obj);
-
-		Channel::pos = &this->position;
-		Channel::nsfw = &this->nsfw;
-		Channel::name = &this->name;
-		Channel::topic = &this->topic;
-		Channel::rateLimit = &this->rateLimit;
-		Channel::permissions = &this->permissions;
 	}
 
 	TextChannel::TextChannel(DisCXXord::Client &client, json val) :
@@ -48,6 +49,14 @@ namespace DisCXXord
 		this->nsfw = val["nsfw"];
 		this->topic = val["topic"];
 
+		Channel::pos = &this->position;
+		Channel::nsfw = &this->nsfw;
+		Channel::name = &this->name;
+		Channel::topic = &this->topic;
+		Channel::guild = &this->guild;
+		Channel::rateLimit = &this->rateLimit;
+		Channel::permissions = &this->permissions;
+
 		if (!val["last_message_id"].is_null())
 			try {
 				this->lastMessage = this->getMessage(val["last_message_id"]);
@@ -58,13 +67,6 @@ namespace DisCXXord
 
 		for (auto &obj : val["permission_overwrites"])
 			this->permissions.emplace_back(obj);
-
-		Channel::pos = &this->position;
-		Channel::nsfw = &this->nsfw;
-		Channel::name = &this->name;
-		Channel::topic = &this->topic;
-		Channel::rateLimit = &this->rateLimit;
-		Channel::permissions = &this->permissions;
 	}
 
 	Message TextChannel::send(const DisCXXord::Embed &embed, const std::string &content)
@@ -81,7 +83,7 @@ namespace DisCXXord
 		try {
 			json value = this->_parent.makeApiRequest(CHANNEL_ENDPT"/" + this->id + MSG_ENDPT"/" + id);
 
-			this->_cachedMessages.emplace_back(this->_parent, value);
+			this->_cachedMessages.emplace_back(this->_parent, value, *this);
 			return this->_cachedMessages.back();
 		} catch (APIErrorException &) {
 			throw MessageNotFoundException("Cannot find any message with id " + id);

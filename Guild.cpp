@@ -10,26 +10,15 @@ namespace DisCXXord
 	{
 		if (!obj["unavailable"].is_null()) {
 			this->available = !obj["unavailable"];
-
-			if (!this->available)
-				return;
-			this->joinedAt = Date(obj["joined_at"].get<std::string>());
-
-			this->large = obj["large"];
-			this->memberCount = obj["member_count"];
-
-			//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
-
-			for (auto &val : obj["channels"]) {
-				this->channels.emplace_back(&this->_parent.getChannel(val, *this));
-			}
-
-			//TODO: presences? *	array of partial presence update objects	presences of the users in the guild
-
 		} else {
 			this->available = true;
 			this->complete = false;
 		}
+
+		if (!this->available)
+			return;
+
+		//TODO: presences? *	array of partial presence update objects	presences of the users in the guild
 
 		if (!obj["roles"].is_null()) {
 			for (auto &val : obj["roles"]) {
@@ -42,7 +31,6 @@ namespace DisCXXord
 				this->roles.emplace_back(client, val);
 		}
 
-
 		if (!obj["members"].is_null()) {
 			for (auto &val : obj["members"]) {
 				this->members.emplace_back(*this, client.getUser(val["user"]), val);
@@ -52,6 +40,19 @@ namespace DisCXXord
 
 			for (auto &val : array)
 				this->members.emplace_back(*this, client.getUser(val["user"]), val);
+		}
+
+		if (this->complete) {
+			this->joinedAt = Date(obj["joined_at"].get<std::string>());
+
+			this->large = obj["large"];
+			this->memberCount = obj["member_count"];
+
+			//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
+
+			for (auto &val : obj["channels"]) {
+				this->channels.emplace_back(&this->_parent.getChannel(val, *this));
+			}
 		}
 
 		this->name = obj["name"];
