@@ -39,11 +39,8 @@ namespace DisCXXord
 		for (auto &id : val["mention_roles"])
 			this->mentionRoles.emplace_back(&this->guild->getRole(id));
 
-		for (json &elem : val["embed"]) {
-			Embed emb{elem};
-
+		for (json &elem : val["embed"])
 			this->embeds.emplace_back(elem);
-		}
 
 		if (!this->embeds.empty())
 			this->embed = &this->embeds.front();
@@ -93,8 +90,8 @@ namespace DisCXXord
 		for (auto &id : val["mention_roles"])
 			this->mentionRoles.emplace_back(&this->guild->getRole(id));
 
-		//for (auto &elem : val["embed"])
-		//	this->embeds.push_back(Embed{elem});
+		for (auto &elem : val["embed"])
+			this->embeds.emplace_back(elem);
 
 		if (!this->embeds.empty())
 			this->embed = &this->embeds.front();

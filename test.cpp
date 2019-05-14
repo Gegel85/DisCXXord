@@ -8,18 +8,14 @@ using namespace DisCXXord;
 void	ready(Client &client)
 {
 	const User &me = client.me();
-	client.logger.info("Getting User");
 
-	User &chan = client.getUser("159735059421724672");
-	client.logger.info("Sending Message");
-	chan.send({
+	client.getUser("159735059421724672").send({
 		.content = "Test message",
 		.embed = {
 			.title = "Test",
 			.description = "Test"
 		}
 	});
-	client.logger.info("Done");
 	std::cout << "Connected on " << me.tag() << std::endl;
 	std::cout << "My avatar url is " << me.avatarURL() << std::endl;
 	std::cout << "I'm on " << client.guilds().size() << " server(s) !" << std::endl;

@@ -307,6 +307,7 @@ namespace DisCXXord
 	{
 		switch (object["op"].get<int>()) {
 		case 0:
+			this->logger.debug("Got payload " + object["t"].get<std::string>());
 			this->_hbInfos._lastSValue = object["s"];
 			this->_dispatchEvents[object["t"]](
 				object["d"]
