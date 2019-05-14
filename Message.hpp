@@ -8,6 +8,7 @@
 #include "Member.hpp"
 #include "Attachement.hpp"
 #include "Reaction.hpp"
+#include "SendingMessage.hpp"
 
 namespace DisCXXord
 {
@@ -53,6 +54,8 @@ namespace DisCXXord
 		Optional<Snowflake>	nonce;
 		bool			pinned;
 		Optional<Snowflake>	webhookId;
+
+		Message &reply(const SendingMessage &content);
 
 		Message(Client &client, json val, Channel &channel);
 		Message(Client &client, json val);

@@ -7,6 +7,7 @@
 #include "Message.hpp"
 #include "PermissionOverwrite.hpp"
 #include "Embed.hpp"
+#include "SendingMessage.hpp"
 
 namespace DisCXXord
 {
@@ -24,14 +25,6 @@ namespace DisCXXord
 			GUILD_CATEGORY,
 			GUILD_NEWS,
 			GUILD_STORE,
-		};
-
-		struct SendingMessage {
-			std::string		content{};
-			Embed			embed{};
-			bool			tts{false};
-			std::string		nonce{};
-			std::vector<std::string>files{};
 		};
 
 		static std::string typeToString(Type e) {

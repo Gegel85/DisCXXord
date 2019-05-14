@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2019
-** DisCXXord
-** File description:
-** Date.hpp
-*/
-
 #ifndef DISCXXORD_DATE_HPP
 #define DISCXXORD_DATE_HPP
 
@@ -19,6 +12,8 @@ namespace DisCXXord
 		tm _timestamp;
 
 	public:
+		static Date now();
+
 		explicit Date(time_t time = 0);
 		explicit Date(std::string time);
 		std::string toISO() const;

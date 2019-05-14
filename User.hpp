@@ -47,7 +47,7 @@ namespace DisCXXord
 		Optional<std::string> locale;
 
 		PrivateChannel &getPrivateChannel();
-		Message &send(const Channel::SendingMessage &);
+		Message &send(const SendingMessage &);
 
 		User(Client &client, json obj);
 		int defaultAvatar() const;

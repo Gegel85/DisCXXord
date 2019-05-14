@@ -16,12 +16,11 @@ namespace DisCXXord
 		Optional<std::string>	iconUrl;
 		Optional<std::string>	proxyIconUrl;
 
-		EmbedFooter() = default;
 		EmbedFooter(json obj);
 		EmbedFooter(
-			std::string		&&text = "",
-			Optional<std::string>	&&iconUrl = {},
-			Optional<std::string>	&&proxyIconUrl = {}
+			const std::string &text = "",
+			const Optional <std::string> &iconUrl = {},
+			const Optional <std::string> &proxyIconUrl = {}
 		);
 		std::string dump() const;
 	};
@@ -33,13 +32,12 @@ namespace DisCXXord
 		Optional<int>		height;
 		Optional<int>		width;
 
-		EmbedImage() = default;
 		EmbedImage(json obj);
 		EmbedImage(
-			Optional<std::string>	&&url = {},
-			Optional<std::string>	&&proxyUrl = {},
-			Optional<int>		&&height = {},
-			Optional<int>		&&width = {}
+			const Optional<std::string> &url = {},
+			const Optional<std::string> &proxyUrl = {},
+			const Optional<int> &height = {},
+			const Optional<int> &width = {}
 		);
 		std::string dump() const;
 	};
@@ -50,12 +48,11 @@ namespace DisCXXord
 		Optional<int>		height;
 		Optional<int>		width;
 
-		EmbedVideo() = default;
 		EmbedVideo(json obj);
 		EmbedVideo(
-			Optional<std::string>	&&url = {},
-			Optional<int>		&&height = {},
-			Optional<int>		&&width = {}
+			const Optional<std::string> &url = {},
+			const Optional<int> &height = {},
+			const Optional<int> &width = {}
 		);
 		std::string dump() const;
 	};
@@ -65,11 +62,10 @@ namespace DisCXXord
 		Optional<std::string>	url;
 		Optional<std::string>	name;
 
-		EmbedProvider() = default;
 		EmbedProvider(json obj);
 		EmbedProvider(
-			Optional<std::string>	&&url = {},
-			Optional<std::string>	&&name = {}
+			const Optional<std::string> &url = {},
+			const Optional<std::string> &name = {}
 		);
 		std::string dump() const;
 	};
@@ -81,14 +77,11 @@ namespace DisCXXord
 		Optional<std::string>	url;
 		Optional<std::string>	name;
 
-		EmbedAuthor() = default;
 		EmbedAuthor(json obj);
-		EmbedAuthor(
-			Optional<std::string>	&&iconUrl = {},
-			Optional<std::string>	&&proxyIconUrl = {},
-			Optional<std::string>	&&url = {},
-			Optional<std::string>	&&name = {}
-		);
+		EmbedAuthor(const Optional <std::string> &name = {},
+			    const Optional <std::string> &iconUrl = {},
+			    const Optional <std::string> &url = {},
+			    const Optional <std::string> &proxyIconUrl = {});
 		std::string dump() const;
 	};
 
@@ -102,9 +95,9 @@ namespace DisCXXord
 		EmbedField(json obj);
 		EmbedField(const EmbedField &);
 		EmbedField(
-			std::string	&&name = {},
-			std::string	&&value = {},
-			Optional<bool>	&&isInline = {}
+			const std::string &name = {},
+			const std::string &value = {},
+			const Optional<bool> &isInline = {}
 		);
 		std::string dump() const;
 	};
@@ -129,19 +122,19 @@ namespace DisCXXord
 		Embed(Embed &) = default;
 		Embed(Embed &&) = default;
 		Embed(
-			std::string				&&title = {},
-			std::string				&&description = {},
-			std::string				&&url = {},
-			Optional<Date>				&&timestamp = {},
-			Optional<int>				&&color = {},
-			Optional<EmbedFooter>			&&footer = {},
-			Optional<EmbedImage>			&&image = {},
-			Optional<EmbedImage>			&&thumbnail = {},
-			Optional<EmbedVideo>			&&video = {},
-			Optional<EmbedProvider>			&&provider = {},
-			Optional<EmbedAuthor>			&&author = {},
-			Optional<std::vector<EmbedField>>	&&fields = {},
-			Optional<std::string>			&&type = {}
+			const std::string &title = {},
+			const std::string &description = {},
+			const std::string &url = {},
+			const Optional<Date> &timestamp = {},
+			const Optional<int> &color = {},
+			const Optional<EmbedFooter> &footer = {},
+			const Optional<EmbedImage> &image = {},
+			const Optional<EmbedImage> &thumbnail = {},
+			const Optional<EmbedVideo> &video = {},
+			const Optional<EmbedProvider> &provider = {},
+			const Optional<EmbedAuthor> &author = {},
+			const Optional<std::vector<EmbedField>> &fields = {},
+			const Optional<std::string> &type = {}
 		);
 		std::string dump() const;
 	};

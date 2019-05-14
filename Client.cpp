@@ -64,6 +64,9 @@ namespace DisCXXord
 
 	void Client::run(const std::string &token)
 	{
+		if (this->_running)
+			throw RunningException("This client is already running");
+		this->_running = true;
 		this->_token = token;
 		try {
 			this->_connect();
@@ -78,6 +81,7 @@ namespace DisCXXord
 		}
 		if (this->_hbInfos._heartbeatThread.joinable())
 			this->_hbInfos._heartbeatThread.join();
+		this->_running = false;
 	}
 
 	void Client::run(const std::string &username, const std::string &password)

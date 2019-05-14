@@ -81,7 +81,7 @@ namespace DisCXXord
 		return *this->_privateChannel;
 	}
 
-	Message &User::send(const DisCXXord::Channel::SendingMessage &content)
+	Message &User::send(const DisCXXord::SendingMessage &content)
 	{
 		return this->getPrivateChannel().send(content);
 	}

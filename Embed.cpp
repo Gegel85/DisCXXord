@@ -11,12 +11,10 @@ namespace DisCXXord
 	{
 	}
 
-	EmbedAuthor::EmbedAuthor(
-		Optional<std::string> &&iconUrl,
-		Optional<std::string> &&proxyIconUrl,
-		Optional<std::string> &&url,
-		Optional<std::string> &&name
-	) :
+	EmbedAuthor::EmbedAuthor(const Optional <std::string> &name,
+				 const Optional <std::string> &iconUrl,
+				 const Optional <std::string> &url,
+				 const Optional <std::string> &proxyIconUrl) :
 		iconUrl(iconUrl),
 		proxyIconUrl(proxyIconUrl),
 		url(url),
@@ -49,7 +47,7 @@ namespace DisCXXord
 			if (!first)
 				stream << ",";
 			first = false;
-			stream << "\"" << val.first << "\":\"" << val.second << "\"";
+			stream << "\"" << val.first << "\":" << val.second;
 		}
 
 		return "{" + stream.str() + "}";
@@ -65,9 +63,9 @@ namespace DisCXXord
 	}
 
 	EmbedField::EmbedField(
-		std::string &&name,
-		std::string &&value,
-		Optional<bool> &&isInline
+		const std::string &name,
+		const std::string &value,
+		const Optional<bool> &isInline
 	) :
 		name(name),
 		value(value),
@@ -97,9 +95,9 @@ namespace DisCXXord
 	}
 
 	EmbedFooter::EmbedFooter(
-		std::string &&text,
-		Optional<std::string> &&iconUrl,
-		Optional<std::string> &&proxyIconUrl
+		const std::string &text,
+		const Optional <std::string> &iconUrl,
+		const Optional <std::string> &proxyIconUrl
 	) :
 		text(text),
 		iconUrl(iconUrl),
@@ -125,7 +123,7 @@ namespace DisCXXord
 
 		for (auto &val : arr) {
 			stream << ",";
-			stream << '"' << val.first << R"(":")" << val.second << '"';
+			stream << '"' << val.first << R"(":)" << val.second;
 		}
 
 		return "{" + stream.str() + "}";
@@ -142,10 +140,10 @@ namespace DisCXXord
 	}
 
 	EmbedImage::EmbedImage(
-		Optional<std::string> &&url,
-		Optional<std::string> &&proxyUrl,
-		Optional<int> &&height,
-		Optional<int> &&width
+		const Optional <std::string> &url,
+		const Optional <std::string> &proxyUrl,
+		const Optional<int> &height,
+		const Optional<int> &width
 	) :
 		url(url),
 		proxyUrl(proxyUrl),
@@ -179,7 +177,7 @@ namespace DisCXXord
 			if (!first)
 				stream << ",";
 			first = false;
-			stream << "\"" << val.first << "\":\"" << val.second << "\"";
+			stream << "\"" << val.first << "\":" << val.second;
 		}
 
 		return "{" + stream.str() + "}";
@@ -194,8 +192,8 @@ namespace DisCXXord
 	}
 
 	EmbedProvider::EmbedProvider(
-		DisCXXord::Optional<std::string> &&url,
-		DisCXXord::Optional<std::string> &&name
+		const Optional <std::string> &url,
+		const Optional <std::string> &name
 	) :
 		url(url),
 		name(name)
@@ -221,7 +219,7 @@ namespace DisCXXord
 			if (!first)
 				stream << ",";
 			first = false;
-			stream << "\"" << val.first << "\":\"" << val.second << "\"";
+			stream << "\"" << val.first << "\":" << val.second;
 		}
 
 		return "{" + stream.str() + "}";
@@ -237,9 +235,9 @@ namespace DisCXXord
 	}
 
 	EmbedVideo::EmbedVideo(
-		Optional<std::string> &&url,
-		Optional<int> &&height,
-		Optional<int> &&width
+		const Optional <std::string> &url,
+		const Optional<int> &height,
+		const Optional<int> &width
 	) :
 		url(url),
 		height(height),
@@ -269,7 +267,7 @@ namespace DisCXXord
 			if (!first)
 				stream << ",";
 			first = false;
-			stream << "\"" << val.first << "\":\"" << val.second << "\"";
+			stream << "\"" << val.first << "\":" << val.second;
 		}
 
 		return "{" + stream.str() + "}";
@@ -298,19 +296,19 @@ namespace DisCXXord
 	}
 
 	Embed::Embed(
-		std::string &&title,
-		std::string &&description,
-		std::string &&url,
-		Optional<Date> &&timestamp,
-		Optional<int> &&color,
-		Optional<EmbedFooter> &&footer,
-		Optional<EmbedImage> &&image,
-		Optional<EmbedImage> &&thumbnail,
-		Optional<EmbedVideo> &&video,
-		Optional<EmbedProvider> &&provider,
-		Optional<EmbedAuthor> &&author,
-		Optional<std::vector<EmbedField>> &&fields,
-		Optional<std::string> &&type
+		const std::string &title,
+		const std::string &description,
+		const std::string &url,
+		const Optional <Date> &timestamp,
+		const Optional<int> &color,
+		const Optional <EmbedFooter> &footer,
+		const Optional <EmbedImage> &image,
+		const Optional <EmbedImage> &thumbnail,
+		const Optional <EmbedVideo> &video,
+		const Optional <EmbedProvider> &provider,
+		const Optional <EmbedAuthor> &author,
+		const Optional <std::vector<EmbedField>> &fields,
+		const Optional <std::string> &type
 	) :
 		title(title.empty() ? json() : json(title)),
 		type(type),

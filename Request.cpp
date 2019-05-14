@@ -1,15 +1,9 @@
-/*
-** EPITECH PROJECT, 2019
-** DisCXXord
-** File description:
-** Request.cpp
-*/
-
 #include "Request.hpp"
 #include "Exceptions.hpp"
 #include "SecuredSocket.hpp"
 
 #include <iostream>
+
 namespace DisCXXord
 {
 	Socket::HttpRequestIn Request::parseUrl(const std::string &url)

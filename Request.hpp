@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2019
-** DisCXXord
-** File description:
-** Request.hpp
-*/
-
 #ifndef DISCXXORD_REQUEST_HPP
 #define DISCXXORD_REQUEST_HPP
 

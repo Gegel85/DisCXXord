@@ -24,9 +24,12 @@ namespace DisCXXord
 	public:
 		Optional(json val) : _value(val.is_null() ? nullptr : new type(val)) {};
 		Optional(type *val = nullptr) : _value(val) {};
-		Optional(nullptr_t) : _value(nullptr) {};
+		Optional(type &val) : _value(new type(val)) {};
+		Optional(const type &val) : _value(new type(val)) {};
 		Optional(Optional<type> &other) = default;
 		Optional(Optional<type> &&other) = default;
+		Optional(const Optional<type> &other) : _value(other ? new type(*other) : nullptr) {}
+		Optional(const Optional<type> &&other) : _value(other ? new type(*other) : nullptr) {}
 
 		~Optional() {
 			this->destroy();

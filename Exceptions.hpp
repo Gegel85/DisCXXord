@@ -19,6 +19,11 @@ namespace DisCXXord
 		explicit TimeoutException(const std::string &msg) : BaseException(msg) {};
 	};
 
+	class RunningException : public BaseException {
+	public:
+		explicit RunningException(const std::string &msg) : BaseException(msg) {};
+	};
+
 	class DisconnectedException : public BaseException {
 	public:
 		explicit DisconnectedException(const std::string &msg) : BaseException(msg) {};

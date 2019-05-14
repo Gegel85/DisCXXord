@@ -105,4 +105,9 @@ namespace DisCXXord
 		if (!val["edited_timestamp"].is_null())
 			this->editedAt = Date(static_cast<time_t>(val["edited_timestamp"]));
 	}
+
+	Message& Message::reply(const DisCXXord::SendingMessage &val)
+	{
+		return this->channel.send(val);
+	}
 }

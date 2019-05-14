@@ -138,16 +138,17 @@ namespace DisCXXord
 			int						_nbNotAcknoledge;
 		};
 
-		Optional<User>	_me;
+		Optional<User>			_me;
 		std::vector<SharedPtr<User>>	_cachedUsers;
 		std::vector<SharedPtr<Guild>>	_cachedGuilds;
 		std::vector<SharedPtr<Channel>>	_cachedChannels;
-		std::vector<std::string>		_guilds;
-		std::string 				_token;
-		SecuredWebSocket			_webSocket;
-		clientHandlers				_handlers;
-		HeartbeatInfos				_hbInfos;
-		bool					_disconnected = false;
+		std::vector<std::string>	_guilds;
+		std::string 			_token;
+		SecuredWebSocket		_webSocket;
+		clientHandlers			_handlers;
+		HeartbeatInfos			_hbInfos;
+		bool				_disconnected = false;
+		bool				_running = false;
 	};
 }
 

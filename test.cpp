@@ -9,13 +9,6 @@ void	ready(Client &client)
 {
 	const User &me = client.me();
 
-	client.getUser("159735059421724672").send({
-		.content = "Test message",
-		.embed = {
-			.title = "Test",
-			.description = "Test"
-		}
-	});
 	std::cout << "Connected on " << me.tag() << std::endl;
 	std::cout << "My avatar url is " << me.avatarURL() << std::endl;
 	std::cout << "I'm on " << client.guilds().size() << " server(s) !" << std::endl;
@@ -37,7 +30,23 @@ int	main()
 	client.setHandlers({
 		.ready = ready,
 		.messageCreate = [](Client &client, Message &message) {
-			std::cout << "New message from " << message.author.username << ": " << message.content << std::endl;
+			if (message.content == "!disconnect") {
+				message.reply({
+					.content = "",
+					.embed = {
+						"Disconnecting",          //title
+						"Leaving discord",        //description
+						"",                       //url
+						Date::now(),              //timestamp
+						0xFF0000,                 //color
+						EmbedFooter{              //footer
+							message.author.username,
+							message.user->avatarURL()
+						}
+					}
+				});
+				client.disconnect();
+			}
 		}
 	});
 	client.run("Bot " TOKEN);

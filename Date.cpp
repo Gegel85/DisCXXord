@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2019
-** DisCXXord
-** File description:
-** Date.cpp
-*/
-
 #include "Date.hpp"
 
 namespace DisCXXord
@@ -35,5 +28,10 @@ namespace DisCXXord
 
 		std::strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", &this->_timestamp);
 		return buffer;
+	}
+
+	Date Date::now()
+	{
+		return Date{time(nullptr) * 1000};
 	}
 }
