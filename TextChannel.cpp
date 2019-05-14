@@ -62,8 +62,12 @@ namespace DisCXXord
 		if (!val["last_message_id"].is_null())
 			this->_lastMsgId = val["last_message_id"];
 
-		if (!val["parent_id"].is_null())
-			this->parent = &dynamic_cast<CategoryChannel &>(client.getChannel(val["parent_id"]));
+		if (!val["parent_id"].is_null()) {
+			this->parentId = Snowflake(client, {{"id", val["parent_id"]}});
+			try {
+				this->parent = &dynamic_cast<CategoryChannel &>(client.getChannel(this->parentId->id));
+			} catch (APIErrorException &) {}
+		}
 
 		if (!val["topic"].is_null())
 			this->topic = val["topic"];
