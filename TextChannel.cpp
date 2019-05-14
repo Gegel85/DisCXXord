@@ -12,7 +12,7 @@ namespace DisCXXord
 	{
 		this->name = val["name"];
 		this->position = val["position"];
-		this->nsfw = val["nsfw"];
+		this->nsfw = val["nsfw"].is_null() ? false : val["nsfw"].get<bool>();
 
 		Channel::pos.reset(&this->position);
 		Channel::nsfw.reset(&this->nsfw);

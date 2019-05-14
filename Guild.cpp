@@ -4,6 +4,8 @@
 #include "endpoints.hpp"
 #include "PrivateChannel.hpp"
 
+#include <iostream>
+
 namespace DisCXXord
 {
 	Guild::Guild(Client &client, json obj) :
