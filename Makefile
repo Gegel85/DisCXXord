@@ -28,6 +28,7 @@ SRC =	SecuredSocket.cpp		\
 		Channel.cpp				\
 		PrivateChannel.cpp		\
 		PermissionOverwrite.cpp	\
+		SharedPtr.cpp			\
 
 OBJ =	$(SRC:%.cpp=%.o)
 

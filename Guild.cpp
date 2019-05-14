@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "Exceptions.hpp"
 #include "endpoints.hpp"
+#include "PrivateChannel.hpp"
 
 namespace DisCXXord
 {
@@ -10,6 +11,7 @@ namespace DisCXXord
 	{
 		if (!obj["unavailable"].is_null()) {
 			this->available = !obj["unavailable"];
+			this->complete = true;
 		} else {
 			this->available = true;
 			this->complete = false;

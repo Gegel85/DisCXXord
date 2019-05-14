@@ -3,19 +3,25 @@
 
 
 #include "Channel.hpp"
+#include "Message.hpp"
 
 namespace DisCXXord
 {
 	class PrivateChannel : public Channel {
 	private:
-		std::vector<Message>	_cachedMessages;
+		std::vector<SharedPtr<Message>>	_cachedMessages;
+		std::string				_lastMsgId;
 
 	public:
 		PrivateChannel(Client &client, json val);
 		~PrivateChannel() override = default;
 
-		Message send(const Embed &embed, const std::string &content) override;
-		Message getMessage(const std::string &id) override;
+		Message &send(const SendingMessage &content) override;
+		Message &getMessage(const std::string &id) override;
+		Message &getLastMessage() override;
+		void cacheMessage(Message *) override;
+
+		User &user;
 	};
 }
 

@@ -4,6 +4,7 @@
 
 #include "Snowflake.hpp"
 #include "Embed.hpp"
+#include "PartialUser.hpp"
 #include "Member.hpp"
 #include "Attachement.hpp"
 #include "Reaction.hpp"
@@ -55,9 +56,8 @@ namespace DisCXXord
 
 		Message(Client &client, json val, Channel &channel);
 		Message(Client &client, json val);
+		Message(Message &&) = default;
 	};
 }
-
-#include "Guild.hpp"
 
 #endif //DISCXXORD_MESSAGE_HPP

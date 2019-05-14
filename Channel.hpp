@@ -4,7 +4,6 @@
 
 #include "Snowflake.hpp"
 #include "Optional.hpp"
-#include "User.hpp"
 #include "Message.hpp"
 #include "PermissionOverwrite.hpp"
 #include "Embed.hpp"
@@ -13,6 +12,7 @@ namespace DisCXXord
 {
 	class Guild;
 	class CategoryChannel;
+	class user;
 
 	class Channel : public Snowflake {
 	public:
@@ -26,7 +26,13 @@ namespace DisCXXord
 			GUILD_STORE,
 		};
 
-		Type type;
+		struct SendingMessage {
+			std::string		content{};
+			Embed			embed{};
+			bool			tts{false};
+			std::string		nonce{};
+			std::vector<std::string>files{};
+		};
 
 		static std::string typeToString(Type e) {
 			switch (e) {
@@ -63,11 +69,12 @@ namespace DisCXXord
 			return dynamic_cast<type &>(*this);
 		};
 
-		Message send(const Embed &embed);
-		Message send(const std::string &content);
-		virtual Message send(const Embed &embed, const std::string &content) = 0;
-		virtual Message getMessage(const std::string &id) = 0;
+		virtual Message &send(const SendingMessage &content) = 0;
+		virtual Message &getMessage(const std::string &id) = 0;
+		virtual Message &getLastMessage() = 0;
+		virtual void cacheMessage(Message *) = 0;
 
+		Type type;
 		Optional<int> pos;
 		Optional<int> rateLimit;
 		Optional<int> userLimit;
@@ -76,7 +83,6 @@ namespace DisCXXord
 		Optional<bool> nsfw;
 		Optional<User> owner;
 		Optional<Guild> guild;
-		Optional<Message> lastMessage;
 		Optional<Snowflake> appID;
 		Optional<std::string> name;
 		Optional<std::string> topic;

@@ -1,3 +1,4 @@
+#include "User.hpp"
 #include "Member.hpp"
 
 namespace DisCXXord

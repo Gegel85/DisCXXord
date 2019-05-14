@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "endpoints.hpp"
 
+#include <iostream>
 namespace DisCXXord
 {
 	TextChannel::TextChannel(DisCXXord::Client &client, json val, Guild &guild) :
@@ -13,18 +14,16 @@ namespace DisCXXord
 		this->position = val["position"];
 		this->nsfw = val["nsfw"];
 
-		Channel::pos = &this->position;
-		Channel::nsfw = &this->nsfw;
-		Channel::name = &this->name;
-		Channel::topic = &this->topic;
-		Channel::guild = &this->guild;
-		Channel::rateLimit = &this->rateLimit;
-		Channel::permissions = &this->permissions;
+		Channel::pos.reset(&this->position);
+		Channel::nsfw.reset(&this->nsfw);
+		Channel::name.reset(&this->name);
+		Channel::topic.reset(&this->topic);
+		Channel::guild.reset(&this->guild);
+		Channel::rateLimit.reset(&this->rateLimit);
+		Channel::permissions.reset(&this->permissions);
 
 		if (!val["last_message_id"].is_null())
-			try {
-				this->lastMessage = this->getMessage(val["last_message_id"]);
-			} catch (MessageNotFoundException &) {}
+			this->_lastMsgId = val["last_message_id"];
 
 		if (!val["topic"].is_null())
 			this->topic = val["topic"];
@@ -47,46 +46,68 @@ namespace DisCXXord
 		this->position = val["position"];
 		this->rateLimit = val["rate_limit_per_user"];
 		this->nsfw = val["nsfw"];
-		this->topic = val["topic"];
 
-		Channel::pos = &this->position;
-		Channel::nsfw = &this->nsfw;
-		Channel::name = &this->name;
-		Channel::topic = &this->topic;
-		Channel::guild = &this->guild;
-		Channel::rateLimit = &this->rateLimit;
-		Channel::permissions = &this->permissions;
+		Channel::pos.reset(&this->position);
+		Channel::nsfw.reset(&this->nsfw);
+		Channel::name.reset(&this->name);
+		Channel::topic.reset(&this->topic);
+		Channel::guild.reset(&this->guild);
+		Channel::rateLimit.reset(&this->rateLimit);
+		Channel::permissions.reset(&this->permissions);
 
 		if (!val["last_message_id"].is_null())
-			try {
-				this->lastMessage = this->getMessage(val["last_message_id"]);
-			} catch (MessageNotFoundException &) {}
+			this->_lastMsgId = val["last_message_id"];
 
 		if (!val["parent_id"].is_null())
 			this->parent = &dynamic_cast<CategoryChannel &>(client.getChannel(val["parent_id"]));
+
+		if (!val["topic"].is_null())
+			this->topic = val["topic"];
 
 		for (auto &obj : val["permission_overwrites"])
 			this->permissions.emplace_back(obj);
 	}
 
-	Message TextChannel::send(const DisCXXord::Embed &embed, const std::string &content)
+	Message &TextChannel::send(const SendingMessage &msg)
 	{
-		//TODO: Envoyer des messages
-		throw std::exception();
+		if (msg.files.empty()) {
+			this->_parent.logger.info("Create string");
+			std::string request = "{"
+			 	R"("tts":)" + std::string(msg.tts ? "true" : "false") + ","
+				R"("embed":)" + msg.embed.dump() + ","
+				R"("content":")" + msg.content + '"' +
+				(msg.nonce.empty() ? "" : R"("nonce":")" + msg.nonce + '"') +
+			"}";
+
+			this->_parent.logger.info("Make request");
+			this->_cachedMessages.emplace_back(new Message{this->_parent, this->_parent.makeApiRequest(CHANNEL_ENDPT"/" + this->id + MSG_ENDPT, request, "POST")});
+			return *this->_cachedMessages.back();
+		}
+		throw NotImplementedException("TextChannel::send(file)");
 	}
 
-	Message TextChannel::getMessage(const std::string &id)
+	Message &TextChannel::getMessage(const std::string &id)
 	{
-		for (Message &msg : this->_cachedMessages)
-			if (msg.id == id)
-				return msg;
+		for (auto &msg : this->_cachedMessages)
+			if (msg->id == id)
+				return *msg;
 		try {
 			json value = this->_parent.makeApiRequest(CHANNEL_ENDPT"/" + this->id + MSG_ENDPT"/" + id);
 
-			this->_cachedMessages.emplace_back(this->_parent, value, *this);
-			return this->_cachedMessages.back();
+			this->_cachedMessages.emplace_back(new Message{this->_parent, value, *this});
+			return *this->_cachedMessages.back();
 		} catch (APIErrorException &) {
 			throw MessageNotFoundException("Cannot find any message with id " + id);
 		}
+	}
+
+	Message &TextChannel::getLastMessage()
+	{
+		return this->getMessage(this->_lastMsgId);
+	}
+
+	void TextChannel::cacheMessage(Message *msg)
+	{
+		this->_cachedMessages.emplace_back(msg);
 	}
 }

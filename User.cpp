@@ -6,6 +6,8 @@
 #include "User.hpp"
 #include "endpoints.hpp"
 #include "nlohmann/json.hpp"
+#include "Client.hpp"
+#include "PrivateChannel.hpp"
 
 using json = nlohmann::json;
 
@@ -70,5 +72,17 @@ namespace DisCXXord
 	bool User::hasFlag(DisCXXord::User::Flag flag)
 	{
 		return (this->flags & flag) != 0;
+	}
+
+	PrivateChannel &User::getPrivateChannel()
+	{
+		if (!this->_privateChannel)
+			this->_privateChannel = &this->_parent.getPrivateChannel(this->id);
+		return *this->_privateChannel;
+	}
+
+	Message &User::send(const DisCXXord::Channel::SendingMessage &content)
+	{
+		return this->getPrivateChannel().send(content);
 	}
 }

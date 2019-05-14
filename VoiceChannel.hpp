@@ -13,8 +13,10 @@ namespace DisCXXord
 		VoiceChannel(Client &client, json val);
 		~VoiceChannel() override = default;
 
-		Message send(const Embed &embed, const std::string &content) override;
-		Message getMessage(const std::string &id) override;
+		Message &send(const SendingMessage &msg) override;
+		Message &getMessage(const std::string &id) override;
+		Message &getLastMessage() override;
+		void cacheMessage(Message *) override;
 	};
 }
 

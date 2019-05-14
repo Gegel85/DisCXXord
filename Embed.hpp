@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2019
-** DisCXXord
-** File description:
-** Embed.hpp
-*/
-
 #ifndef DISCXXORD_EMBED_HPP
 #define DISCXXORD_EMBED_HPP
 
@@ -17,18 +10,24 @@ using json = nlohmann::json;
 
 namespace DisCXXord
 {
-	struct EmbedFooter {
+	class EmbedFooter {
+	public:
 		std::string		text = "";
 		Optional<std::string>	iconUrl;
 		Optional<std::string>	proxyIconUrl;
 
 		EmbedFooter() = default;
 		EmbedFooter(json obj);
-
-		std::string dump();
+		EmbedFooter(
+			std::string		&&text = "",
+			Optional<std::string>	&&iconUrl = {},
+			Optional<std::string>	&&proxyIconUrl = {}
+		);
+		std::string dump() const;
 	};
 
-	struct EmbedImage {
+	class EmbedImage {
+	public:
 		Optional<std::string>	url;
 		Optional<std::string>	proxyUrl;
 		Optional<int>		height;
@@ -36,32 +35,47 @@ namespace DisCXXord
 
 		EmbedImage() = default;
 		EmbedImage(json obj);
-
-		std::string dump();
+		EmbedImage(
+			Optional<std::string>	&&url = {},
+			Optional<std::string>	&&proxyUrl = {},
+			Optional<int>		&&height = {},
+			Optional<int>		&&width = {}
+		);
+		std::string dump() const;
 	};
 
-	struct EmbedVideo {
+	class EmbedVideo {
+	public:
 		Optional<std::string>	url;
 		Optional<int>		height;
 		Optional<int>		width;
 
 		EmbedVideo() = default;
 		EmbedVideo(json obj);
-
-		std::string dump();
+		EmbedVideo(
+			Optional<std::string>	&&url = {},
+			Optional<int>		&&height = {},
+			Optional<int>		&&width = {}
+		);
+		std::string dump() const;
 	};
 
-	struct EmbedProvider {
+	class EmbedProvider {
+	public:
 		Optional<std::string>	url;
 		Optional<std::string>	name;
 
 		EmbedProvider() = default;
 		EmbedProvider(json obj);
-
-		std::string dump();
+		EmbedProvider(
+			Optional<std::string>	&&url = {},
+			Optional<std::string>	&&name = {}
+		);
+		std::string dump() const;
 	};
 
-	struct EmbedAuthor {
+	class EmbedAuthor {
+	public:
 		Optional<std::string>	iconUrl;
 		Optional<std::string>	proxyIconUrl;
 		Optional<std::string>	url;
@@ -69,40 +83,67 @@ namespace DisCXXord
 
 		EmbedAuthor() = default;
 		EmbedAuthor(json obj);
-
-		std::string dump();
+		EmbedAuthor(
+			Optional<std::string>	&&iconUrl = {},
+			Optional<std::string>	&&proxyIconUrl = {},
+			Optional<std::string>	&&url = {},
+			Optional<std::string>	&&name = {}
+		);
+		std::string dump() const;
 	};
 
-	struct EmbedField {
+	class EmbedField {
+	public:
 		std::string	name = "";
 		std::string	value = "";
 		Optional<bool>	isInline;
 
 		EmbedField() = default;
 		EmbedField(json obj);
-
-		std::string dump();
+		EmbedField(const EmbedField &);
+		EmbedField(
+			std::string	&&name = {},
+			std::string	&&value = {},
+			Optional<bool>	&&isInline = {}
+		);
+		std::string dump() const;
 	};
 
-	struct Embed {
-		Optional<std::string>	title;
-		Optional<std::string>	type;
-		Optional<std::string>	description;
-		Optional<std::string>	url;
-		Optional<Date>		timestamp;
-		Optional<int>		color;
-		EmbedFooter		footer;
-		EmbedImage		image;
-		EmbedImage		thumbnail;
-		EmbedVideo		video;
-		EmbedProvider		provider;
-		EmbedAuthor		author;
-		std::vector<EmbedField>	fields;
+	class Embed {
+	public:
+		Optional<std::string>			title;
+		Optional<std::string>			type;
+		Optional<std::string>			description;
+		Optional<std::string>			url;
+		Optional<Date>				timestamp;
+		Optional<int>				color;
+		Optional<EmbedFooter>			footer;
+		Optional<EmbedImage>			image;
+		Optional<EmbedImage>			thumbnail;
+		Optional<EmbedVideo>			video;
+		Optional<EmbedProvider>			provider;
+		Optional<EmbedAuthor>			author;
+		Optional<std::vector<EmbedField>>	fields;
 
-		Embed() = default;
 		Embed(json obj);
-
-		std::string dump();
+		Embed(Embed &) = default;
+		Embed(Embed &&) = default;
+		Embed(
+			std::string				&&title = {},
+			std::string				&&description = {},
+			std::string				&&url = {},
+			Optional<Date>				&&timestamp = {},
+			Optional<int>				&&color = {},
+			Optional<EmbedFooter>			&&footer = {},
+			Optional<EmbedImage>			&&image = {},
+			Optional<EmbedImage>			&&thumbnail = {},
+			Optional<EmbedVideo>			&&video = {},
+			Optional<EmbedProvider>			&&provider = {},
+			Optional<EmbedAuthor>			&&author = {},
+			Optional<std::vector<EmbedField>>	&&fields = {},
+			Optional<std::string>			&&type = {}
+		);
+		std::string dump() const;
 	};
 }
 

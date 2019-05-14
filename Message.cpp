@@ -1,7 +1,7 @@
 #include "Message.hpp"
 #include "Client.hpp"
+#include "PrivateChannel.hpp"
 
-#include <iostream>
 namespace DisCXXord
 {
 	Message::Message(Client &client, json val, Channel &channel) :
@@ -39,8 +39,11 @@ namespace DisCXXord
 		for (auto &id : val["mention_roles"])
 			this->mentionRoles.emplace_back(&this->guild->getRole(id));
 
-		for (auto &elem : val["embed"])
+		for (json &elem : val["embed"]) {
+			Embed emb{elem};
+
 			this->embeds.emplace_back(elem);
+		}
 
 		if (!this->embeds.empty())
 			this->embed = &this->embeds.front();
@@ -90,8 +93,8 @@ namespace DisCXXord
 		for (auto &id : val["mention_roles"])
 			this->mentionRoles.emplace_back(&this->guild->getRole(id));
 
-		for (auto &elem : val["embed"])
-			this->embeds.emplace_back(elem);
+		//for (auto &elem : val["embed"])
+		//	this->embeds.push_back(Embed{elem});
 
 		if (!this->embeds.empty())
 			this->embed = &this->embeds.front();
@@ -100,7 +103,7 @@ namespace DisCXXord
 			this->webhookId = Snowflake(client, val["webhook_id"]);
 
 		if (!val["nonce"].is_null())
-			this->webhookId = Snowflake(client, val["nonce"]);
+			this->webhookId = Snowflake(client, {{"id", val["nonce"]}});
 
 		if (!val["edited_timestamp"].is_null())
 			this->editedAt = Date(static_cast<time_t>(val["edited_timestamp"]));

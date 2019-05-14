@@ -44,8 +44,8 @@ namespace DisCXXord
 {
 //Public
 	Client::Client(const std::string &logpath, DisCXXord::Logger::LogLevel level) :
-		_handlers(),
-		_logger(logpath, level)
+		logger(logpath, level),
+		_handlers()
 	{
 	}
 
@@ -53,15 +53,11 @@ namespace DisCXXord
 	{
 		if (this->_webSocket.isOpen())
 			this->_webSocket.disconnect();
-		for (Guild *guild : this->_cachedGuilds)
-			delete guild;
-		for (User *user : this->_cachedUsers)
-			delete user;
 	}
 
 	void Client::disconnect()
 	{
-		this->_logger.info("Disconnecting...");
+		this->logger.info("Disconnecting...");
 		this->_webSocket.disconnect();
 		this->_disconnected = true;
 	}
@@ -74,9 +70,9 @@ namespace DisCXXord
 			this->_handleWebSocket();
 		} catch (std::exception &e) {
 			#ifdef __GNUG__
-			this->_logger.critical("Caught exception: " + getLastExceptionName() + ": " + e.what());
+			this->logger.critical("Caught exception: " + getLastExceptionName() + ": " + e.what());
 			#else
-			this->_logger.critical("Caught exception: " + e.what());
+			this->logger.critical("Caught exception: " + e.what());
 			#endif
 			this->_disconnected = true;
 		}
@@ -108,7 +104,7 @@ namespace DisCXXord
 			throw DisconnectedException("You need to be connected to use this");
 		if (user.is_string())
 			return this->getUser(user.get<std::string>());
-		for (User *user_it : this->_cachedUsers)
+		for (auto &user_it : this->_cachedUsers)
 			if (user_it->id == user["id"])
 				return *user_it;
 		try {
@@ -119,11 +115,16 @@ namespace DisCXXord
 		}
 	}
 
+	User &Client::getUser(const char *id)
+	{
+		return this->getUser(std::string(id));
+	}
+
 	User &Client::getUser(const std::string &id)
 	{
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
-		for (User *user : this->_cachedUsers)
+		for (auto &user : this->_cachedUsers)
 			if (user->id == id)
 				return *user;
 		try {
@@ -134,11 +135,29 @@ namespace DisCXXord
 		}
 	}
 
+	PrivateChannel &Client::getPrivateChannel(const std::string &user_id)
+	{
+		for (auto &channel : this->_cachedChannels)
+			if (channel->is(Channel::DM) && channel->owner->id == user_id)
+				return channel->to<PrivateChannel>();
+
+		json val = this->makeApiRequest(USER_ME_ENDPT CHANNEL_ENDPT, R"({"recipient_id":")" + user_id + "\"}", "POST");
+		PrivateChannel *channel = new PrivateChannel(*this, val);
+
+		this->_cachedChannels.emplace_back(channel);
+		return *channel;
+	}
+
+	PrivateChannel &Client::getPrivateChannel(const DisCXXord::User &user)
+	{
+		return this->getPrivateChannel(user.id);
+	}
+
 	Guild &Client::getGuild(const std::string &id)
 	{
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
-		for (Guild *guild : this->_cachedGuilds)
+		for (auto &guild : this->_cachedGuilds)
 			if (guild->id == id)
 				return *guild;
 		try {
@@ -153,7 +172,7 @@ namespace DisCXXord
 	{
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
-		for (Channel *channel : this->_cachedChannels)
+		for (auto &channel : this->_cachedChannels)
 			if (channel->id == val["id"])
 				return *channel;
 		try {
@@ -168,7 +187,7 @@ namespace DisCXXord
 	{
 		if (this->_disconnected)
 			throw DisconnectedException("You need to be connected to use this");
-		for (Channel *channel : this->_cachedChannels)
+		for (auto &channel : this->_cachedChannels)
 			if (channel->id == id)
 				return *channel;
 		try {
@@ -186,7 +205,7 @@ namespace DisCXXord
 		return this->_guilds;
 	}
 
-	json Client::makeApiRequest(const std::string &endpt, const std::string &method, const std::string &body)
+	json Client::makeApiRequest(const std::string &endpt, const std::string &body, const std::string &method)
 	{
 		Request::HttpRequest	result{
 			.method = method,
@@ -202,17 +221,18 @@ namespace DisCXXord
 			result.headers["Content-Type"] = "application/json";
 			result.headers["Content-Length"] = std::to_string(body.size());
 		}
-		this->_logger.debug(method + ": " + API_BASE_URL + endpt + " \"" + body + "\"");
+		this->logger.debug(method + ": " + API_BASE_URL + endpt + " \"" + body + "\"");
 		result = Request::request(result);
 		//TODO: Handle 429 and 502
 		//TODO: Handle global rate limit
 		if (result.code >= 400) {
-			this->_logger.error(method + ": " API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
+			this->logger.error(method + ": " API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName);
 			throw APIErrorException(method + ": " API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName, result.body, result.code);
 		}
-		this->_logger.debug(std::to_string(result.code) + " (" + result.codeName + "): \"" + result.body + "\"");
+		this->logger.debug(std::to_string(result.code) + " (" + result.codeName + "): \"" + result.body + "\"");
 		return json::parse(result.body);
 	}
+
 
 
 
@@ -259,8 +279,8 @@ namespace DisCXXord
 		"}";
 
 		if (!this->_hbInfos._isAcknoledged)
-			this->_logger.warning("Server didn't acknowledged previous heartbeat");
-		this->_logger.debug("Sending heartbeat");
+			this->logger.warning("Server didn't acknowledged previous heartbeat");
+		this->logger.debug("Sending heartbeat");
 		this->_webSocket.send(payload);
 		this->_hbInfos._lastHeartbeat = std::chrono::system_clock::now();
 		this->_hbInfos._isAcknoledged = !waitAnswer;
@@ -293,11 +313,11 @@ namespace DisCXXord
 			);
 			break;
 		case 1:
-			this->_logger.debug("Server requests heartbeat");
+			this->logger.debug("Server requests heartbeat");
 			this->_heartbeat();
 			break;
 		case 11:
-			this->_logger.debug("Server acknowledged heartbeat");
+			this->logger.debug("Server acknowledged heartbeat");
 			this->_hbInfos._isAcknoledged = true;
 			this->_hbInfos._nbNotAcknoledge = 0;
 		}
@@ -314,10 +334,10 @@ namespace DisCXXord
 			FD_ZERO(&set);
 			FD_SET(this->_webSocket.getSockFd(), &set);
 			while (!this->_disconnected && timestruct.tv_sec) {
-				this->_logger.debug("Reading server answer");
+				this->logger.debug("Reading server answer");
 				json object = json::parse(this->_webSocket.getAnswer());
 
-				this->_logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"])));
+				this->logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"])));
 				this->_handlePayload(object);
 			}
 		}
@@ -331,41 +351,41 @@ namespace DisCXXord
 		FD_ZERO(&set);
 		FD_SET(this->_webSocket.getSockFd(), &set);
 		if (select(FD_SETSIZE, &set, nullptr, nullptr, &timestruct) == 1)
-			return this->_webSocket.getAnswer();
+			return {this->_webSocket.getAnswer()};
 		return {};
 	}
 
 	void Client::_connect()
 	{
-		this->_logger.info(LIBNAME " version " VERSION);
-		this->_logger.debug("Getting current user");
+		this->logger.info(LIBNAME " version " VERSION);
+		this->logger.debug("Getting current user");
 		this->_me.emplace(*this, this->makeApiRequest(USER_ME_ENDPT));
-		this->_logger.info("Connected on " + this->_me->tag());
-		this->_logger.debug("Fetching gateway URL");
+		this->logger.info("Connected on " + this->_me->tag());
+		this->logger.debug("Fetching gateway URL");
 
 		json object = this->makeApiRequest(GATEWAY_ENDPT);
 		std::string url = object["url"];
 
-		this->_logger.info("Connecting to Gateway");
+		this->logger.info("Connecting to Gateway");
 		this->_webSocket.connect(url.substr(6, url.size() - 6), 443);
 
-		this->_logger.debug("Waiting HELLO payload");
+		this->logger.debug("Waiting HELLO payload");
 
-		Optional<std::string> answer = this->_timedGetAnswer(30);
-
-		if (!answer)
+		try {
+			object = json::parse(*this->_timedGetAnswer(30));
+		} catch (EmptyValueException &) {
 			throw TimeoutException("Gateway didn't reply to the identify request");
-		object = json::parse(*answer);
+		}
 
 		if (object["op"] == 10)
-			this->_logger.info("Received HELLO from gateway");
+			this->logger.info("Received HELLO from gateway");
 		else
 			throw std::invalid_argument("Gateway didn't send Hello");
 		this->_hbInfos._heartbeatInterval = static_cast<size_t>(object["d"]["heartbeat_interval"]);
-		this->_logger.debug("Default heartbeat interval is " + std::to_string(this->_hbInfos._heartbeatInterval));
-		this->_logger.debug("Sending Identify event");
+		this->logger.debug("Default heartbeat interval is " + std::to_string(this->_hbInfos._heartbeatInterval));
+		this->logger.debug("Sending Identify event");
 		this->_identify();
-		this->_logger.debug("Setting heartbeating thread");
+		this->logger.debug("Setting heartbeating thread");
 		this->_hbInfos._heartbeatThread = std::thread{[this]() { this->_heartbeatLoop(); }};
 	}
 
@@ -391,7 +411,7 @@ namespace DisCXXord
 
 	void Client::_handleWebSocket()
 	{
-		this->_logger.debug("Listening for gateway payloads");
+		this->logger.debug("Listening for gateway payloads");
 		this->_treatWebSocketPayloads();
 	}
 
@@ -405,9 +425,9 @@ namespace DisCXXord
 				this->_handlers.ready(*this);
 			} catch (std::exception &e) {
 				#ifdef __GNUG__
-				this->_logger.error("Caught exception in onReady function: " + getLastExceptionName() + ": " + e.what());
+				this->logger.error("Caught exception in onReady function: " + getLastExceptionName() + ": " + e.what());
 				#else
-				this->_logger.error("Caught exception in onready function: " + e.what());
+				this->logger.error("Caught exception in onready function: " + e.what());
 				#endif
 			}
 	}
@@ -440,10 +460,8 @@ namespace DisCXXord
 	void Client::_guildCreate(json &val)
 	{
 		for (unsigned i = 0; i < this->_cachedGuilds.size(); i++)
-			if (this->_cachedGuilds[i]->id == val["id"]) {
-				delete this->_cachedGuilds[i];
+			if (this->_cachedGuilds[i]->id == val["id"])
 				this->_cachedGuilds.erase(this->_cachedGuilds.begin() + i);
-			}
 		this->_cachedGuilds.emplace_back(new Guild(*this, val));
 	}
 
@@ -514,15 +532,17 @@ namespace DisCXXord
 
 	void Client::_messageCreate(json &val)
 	{
-		std::cout << val.dump(4) << std::endl;
+		Message *msg = new Message{*this, val};
+
+		msg->channel.cacheMessage(msg);
 		if (this->_handlers.messageCreate)
 			try {
-				//this->_handlers.messageCreate(*this);
+				this->_handlers.messageCreate(*this, *msg);
 			} catch (std::exception &e) {
 				#ifdef __GNUG__
-				this->_logger.error("Caught exception in onMessageCreate function: " + getLastExceptionName() + ": " + e.what());
+				this->logger.error("Caught exception in onMessageCreate function: " + getLastExceptionName() + ": " + e.what());
 				#else
-				this->_logger.error("Caught exception in onready function: " + e.what());
+				this->logger.error("Caught exception in onready function: " + e.what());
 				#endif
 			}
 	}

@@ -2,12 +2,18 @@
 #define DISCXXORD_MEMBER_HPP
 
 
-#include "User.hpp"
-#include "Role.hpp"
+#include <string>
+#include <vector>
+#include "Date.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 namespace DisCXXord
 {
 	class Guild;
+	class User;
+	class Role;
 
 	class Member {
 	public:

@@ -1,10 +1,3 @@
-/*
-** EPITECH PROJECT, 2019
-** DisCXXord
-** File description:
-** Exception.hpp
-*/
-
 #ifndef DISCXXORD_EXCEPTION_HPP
 #define DISCXXORD_EXCEPTION_HPP
 
@@ -123,6 +116,11 @@ namespace DisCXXord
 	class InvalidChannelException : public BaseException {
 	public:
 		explicit InvalidChannelException(const std::string &msg) : BaseException(msg) {};
+	};
+
+	class NotImplementedException : public BaseException {
+	public:
+		explicit NotImplementedException(const std::string &msg) : BaseException(msg) {};
 	};
 
 	class APIErrorException : public BaseException {

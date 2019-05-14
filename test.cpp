@@ -8,7 +8,18 @@ using namespace DisCXXord;
 void	ready(Client &client)
 {
 	const User &me = client.me();
+	client.logger.info("Getting User");
 
+	User &chan = client.getUser("159735059421724672");
+	client.logger.info("Sending Message");
+	chan.send({
+		.content = "Test message",
+		.embed = {
+			.title = "Test",
+			.description = "Test"
+		}
+	});
+	client.logger.info("Done");
 	std::cout << "Connected on " << me.tag() << std::endl;
 	std::cout << "My avatar url is " << me.avatarURL() << std::endl;
 	std::cout << "I'm on " << client.guilds().size() << " server(s) !" << std::endl;
@@ -28,7 +39,10 @@ int	main()
 	Client	client("./disc++ord.log", Logger::DEBUG);
 
 	client.setHandlers({
-		.ready = ready
+		.ready = ready,
+		.messageCreate = [](Client &client, Message &message) {
+			std::cout << "New message from " << message.author.username << ": " << message.content << std::endl;
+		}
 	});
 	client.run("Bot " TOKEN);
 	return EXIT_SUCCESS;

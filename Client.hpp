@@ -29,16 +29,21 @@ namespace DisCXXord
 		~Client();
 		User &me();
 		User &getUser(json user);
+		User &getUser(const char *id);
 		User &getUser(const std::string &id);
 		Guild &getGuild(const std::string &id);
 		Channel &getChannel(json val, Guild &guild);
 		Channel &getChannel(const std::string &id);
+		PrivateChannel &getPrivateChannel(const User &user);
+		PrivateChannel &getPrivateChannel(const std::string &user_id);
 		const std::vector<std::string> &guilds();
 		void setHandlers(clientHandlers handl);
 		void disconnect();
 		void run(const std::string &username, const std::string &password);
 		void run(const std::string &token);
-		json makeApiRequest(const std::string &endpt, const std::string &method = "GET", const std::string &body = "");
+		json makeApiRequest(const std::string &endpt, const std::string &body = "", const std::string &method = "GET");
+
+		Logger	logger;
 
 	private:
 		Optional<std::string> _timedGetAnswer(int time);
@@ -127,23 +132,22 @@ namespace DisCXXord
 		struct HeartbeatInfos {
 			size_t						_heartbeatInterval;
 			std::thread					_heartbeatThread;
-			Optional<int>				_lastSValue;
+			Optional<int>					_lastSValue;
 			std::chrono::_V2::system_clock::time_point	_lastHeartbeat;
 			bool						_isAcknoledged;
 			int						_nbNotAcknoledge;
 		};
 
 		Optional<User>	_me;
-		std::vector<User *>	_cachedUsers;
-		std::vector<Guild *>	_cachedGuilds;
-		std::vector<Channel *>	_cachedChannels;
-		std::vector<std::string>_guilds;
-		std::string 		_token;
-		SecuredWebSocket	_webSocket;
-		clientHandlers		_handlers;
-		Logger			_logger;
-		HeartbeatInfos		_hbInfos;
-		bool			_disconnected = false;
+		std::vector<SharedPtr<User>>	_cachedUsers;
+		std::vector<SharedPtr<Guild>>	_cachedGuilds;
+		std::vector<SharedPtr<Channel>>	_cachedChannels;
+		std::vector<std::string>		_guilds;
+		std::string 				_token;
+		SecuredWebSocket			_webSocket;
+		clientHandlers				_handlers;
+		HeartbeatInfos				_hbInfos;
+		bool					_disconnected = false;
 	};
 }
 

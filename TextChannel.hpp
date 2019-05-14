@@ -9,7 +9,8 @@ namespace DisCXXord
 {
 	class TextChannel : public Channel {
 	private:
-		std::vector<Message>	_cachedMessages;
+		std::vector<SharedPtr<Message>>	_cachedMessages;
+		std::string				_lastMsgId;
 
 	public:
 		int position;
@@ -25,8 +26,10 @@ namespace DisCXXord
 		TextChannel(Client &client, json val);
 		~TextChannel() override = default;
 
-		Message send(const Embed &embed, const std::string &content) override;
-		Message getMessage(const std::string &id) override;
+		Message &send(const SendingMessage &content) override;
+		Message &getMessage(const std::string &id) override;
+		Message &getLastMessage() override;
+		void cacheMessage(Message *msg) override;
 	};
 }
 

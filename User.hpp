@@ -11,14 +11,20 @@
 #include "Snowflake.hpp"
 #include "nlohmann/json.hpp"
 #include "PartialUser.hpp"
+#include "Channel.hpp"
 
 using json = nlohmann::json;
 
 namespace DisCXXord
 {
 	class Client;
+	class PrivateChannel;
+	class Message;
 
 	class User : public PartialUser {
+	private:
+		Optional<PrivateChannel>_privateChannel;
+
 	public:
 		enum Flag {
 			NONE		= 0,
@@ -40,6 +46,9 @@ namespace DisCXXord
 		Optional<std::string> email;
 		Optional<std::string> locale;
 
+		PrivateChannel &getPrivateChannel();
+		Message &send(const Channel::SendingMessage &);
+
 		User(Client &client, json obj);
 		int defaultAvatar() const;
 		std::string tag() const;
@@ -49,6 +58,8 @@ namespace DisCXXord
 		std::string avatarURL(int size = 128, const std::string &format = "png") const;
 	};
 }
+
+#include "PrivateChannel.hpp"
 
 
 #endif //DISC_ORD_USER_HPP

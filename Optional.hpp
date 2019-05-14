@@ -2,7 +2,9 @@
 #define DISCXXORD_OPTIONAL_HPP
 
 
+#include <memory>
 #include "Exceptions.hpp"
+#include "SharedPtr.hpp"
 #include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
@@ -12,14 +14,20 @@ namespace DisCXXord
 	template <typename type>
 	class Optional {
 	private:
-		type	*_value;
-		bool	_destroy = true;
+		SharedPtr<type>	_value;
+
+		void destroy()
+		{
+			this->_value = nullptr;
+		};
 
 	public:
-		Optional() : _value(nullptr) {};
 		Optional(json val) : _value(val.is_null() ? nullptr : new type(val)) {};
-		Optional(type *val) : _value(val), _destroy(false) {};
-		Optional(type &&val) : _value(new type(val)) {};
+		Optional(type *val = nullptr) : _value(val) {};
+		Optional(nullptr_t) : _value(nullptr) {};
+		Optional(Optional<type> &other) = default;
+		Optional(Optional<type> &&other) = default;
+
 		~Optional() {
 			this->destroy();
 		};
@@ -34,7 +42,7 @@ namespace DisCXXord
 		type *operator->()
 		{
 			if (this->_value)
-				return this->_value;
+				return &*this->_value;
 			throw EmptyValueException("operator->");
 		};
 
@@ -48,50 +56,36 @@ namespace DisCXXord
 		const type *operator->() const
 		{
 			if (this->_value)
-				return this->_value;
+				return &*this->_value;
 			throw EmptyValueException("operator->");
 		};
 
-		Optional<type> &operator=(const type &new_obj)
+		template<typename assignType>
+		Optional<type> &operator=(assignType &new_obj)
 		{
-			this->destroy();
-			this->_value = new type(new_obj);
-			this->_destroy = true;
+			this->_value.reset(new type(new_obj));
+			return *this;
+		};
+
+		Optional<type> &operator=(type &&new_obj)
+		{
+			this->_value.reset(new type(new_obj));
 			return *this;
 		};
 
 		Optional<type> &operator=(type *new_ptr)
 		{
-			this->destroy();
-			this->_value = new_ptr;
-			this->_destroy = false;
+			this->_value.reset(new_ptr);
 			return *this;
 		};
 
 		Optional<type> &operator=(json new_json)
 		{
-			this->destroy();
 			if (new_json.is_null())
 				this->_value = nullptr;
 			else
-				this->_value = new type(new_json);
+				this->_value.reset(new type(new_json));
 			return *this;
-		};
-
-		void destroy()
-		{
-			if (!*this)
-				return;
-			if (this->_destroy)
-				delete this->_value;
-			this->_value = nullptr;
-		};
-
-		template<typename ...args>
-		void emplace(args&& ...val)
-		{
-			this->destroy();
-			this->_value = new type(std::forward<args>(val)...);
 		};
 
 		bool operator!() const
@@ -99,15 +93,27 @@ namespace DisCXXord
 			return !this->_value;
 		};
 
+		template<typename type2>
+		bool operator==(Optional<type2> &val)
+		{
+			return (!*this && !val) || **this == *val;
+		};
+
 		explicit operator bool() const
 		{
 			return static_cast<bool>(this->_value);
 		};
 
-		template<typename type2>
-		bool operator==(Optional<type2> &val)
+		template<typename ...args>
+		void emplace(args&& ...val)
 		{
-			return (!*this && !val) || **this == *val;
+			this->destroy();
+			this->_value.reset(new type(std::forward<args>(val)...));
+		};
+
+		void reset(type *new_ptr, bool destroyable = false)
+		{
+			this->_value.reset(new_ptr, destroyable);
 		};
 	};
 }
