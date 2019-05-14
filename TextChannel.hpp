@@ -10,7 +10,7 @@ namespace DisCXXord
 	class TextChannel : public Channel {
 	private:
 		std::vector<SharedPtr<Message>>	_cachedMessages;
-		std::string				_lastMsgId;
+		std::string			_lastMsgId;
 
 	public:
 		int position;
@@ -19,7 +19,6 @@ namespace DisCXXord
 		Guild &guild;
 		std::string name;
 		std::string topic;
-
 		std::vector<PermissionOverwrite> permissions;
 
 		TextChannel(Client &client, json val, Guild &guild);

@@ -79,6 +79,7 @@ namespace DisCXXord
 		Optional<Snowflake> appID;
 		Optional<std::string> name;
 		Optional<std::string> topic;
+		Optional<Snowflake> parentId;
 		Optional<std::string> iconHash;
 		Optional<CategoryChannel> parent;
 		Optional<std::vector<User>> recipients;
