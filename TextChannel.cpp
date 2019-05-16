@@ -28,12 +28,8 @@ namespace DisCXXord
 		if (!val["topic"].is_null())
 			this->topic = val["topic"];
 
-		if (!val["parent_id"].is_null()) {
+		if (!val["parent_id"].is_null())
 			this->parentId = Snowflake(client, {{"id", val["parent_id"]}});
-			try {
-				this->parent = &dynamic_cast<CategoryChannel &>(client.getChannel(this->parentId->id));
-			} catch (APIErrorException &) {}
-		}
 
 		if (!val["rate_limit_per_user"].is_null())
 			this->rateLimit = val["rate_limit_per_user"];
@@ -62,12 +58,8 @@ namespace DisCXXord
 		if (!val["last_message_id"].is_null())
 			this->_lastMsgId = val["last_message_id"];
 
-		if (!val["parent_id"].is_null()) {
+		if (!val["parent_id"].is_null())
 			this->parentId = Snowflake(client, {{"id", val["parent_id"]}});
-			try {
-				this->parent = &dynamic_cast<CategoryChannel &>(client.getChannel(this->parentId->id));
-			} catch (APIErrorException &) {}
-		}
 
 		if (!val["topic"].is_null())
 			this->topic = val["topic"];
@@ -91,7 +83,7 @@ namespace DisCXXord
 			this->_cachedMessages.emplace_back(new Message{this->_parent, this->_parent.makeApiRequest(CHANNEL_ENDPT"/" + this->id + MSG_ENDPT, request, "POST")});
 			return *this->_cachedMessages.back();
 		}
-		throw NotImplementedException("TextChannel::send(file)");
+		throw NotImplementedException("TextChannel::send(file)"); //TODO: files
 	}
 
 	Message &TextChannel::getMessage(const std::string &id)

@@ -128,6 +128,11 @@ namespace DisCXXord
 		explicit NotImplementedException(const std::string &msg) : BaseException(msg) {};
 	};
 
+	class CorruptedCacheException : public BaseException {
+	public:
+		explicit CorruptedCacheException(const std::string &msg) : BaseException(msg) {};
+	};
+
 	class APIErrorException : public BaseException {
 	private:
 		int _code;

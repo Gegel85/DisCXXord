@@ -54,9 +54,8 @@ namespace DisCXXord
 
 			//TODO: voice_states? *	array of partial voice state objects	(without the guild_id key)
 
-			for (auto &val : obj["channels"]) {
-				this->channels.emplace_back(&this->_parent.getChannel(val, *this));
-			}
+			for (auto &val : obj["channels"])
+				this->channels.emplace_back(this->_parent.getChannel(val, *this));
 		}
 
 		this->name = obj["name"];
@@ -147,16 +146,16 @@ namespace DisCXXord
 
 	Channel &Guild::getChannel(const std::string &id)
 	{
-		for (Channel *channel : this->channels)
-			if (channel->id == id)
-				return *channel;
+		for (Channel &channel : this->channels)
+			if (channel.id == id)
+				return channel;
 
 		json val = this->_parent.makeApiRequest(GUILDS_ENDPT + this->id + CHANNEL_ENDPT);
 
 		for (auto &value : val) {
 			if (value["id"] == id) {
-				this->channels.emplace_back(&this->_parent.getChannel(val));
-				return *this->channels.back();
+				this->channels.emplace_back(this->_parent.getChannel(val));
+				return this->channels.back();
 			}
 		}
 		throw ChannelNotFoundException("Cannot find channel " + id);

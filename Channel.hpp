@@ -62,6 +62,8 @@ namespace DisCXXord
 			return dynamic_cast<type &>(*this);
 		};
 
+		CategoryChannel &parent();
+
 		virtual Message &send(const SendingMessage &content) = 0;
 		virtual Message &getMessage(const std::string &id) = 0;
 		virtual Message &getLastMessage() = 0;
@@ -81,7 +83,6 @@ namespace DisCXXord
 		Optional<std::string> topic;
 		Optional<Snowflake> parentId;
 		Optional<std::string> iconHash;
-		Optional<CategoryChannel> parent;
 		Optional<std::vector<User>> recipients;
 		Optional<std::vector<PermissionOverwrite>> permissions;
 

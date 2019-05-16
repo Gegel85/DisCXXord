@@ -37,7 +37,7 @@ namespace DisCXXord
 			this->guild = &*this->channel.guild;
 
 		for (auto &id : val["mention_roles"])
-			this->mentionRoles.emplace_back(&this->guild->getRole(id));
+			this->mentionRoles.emplace_back(this->guild->getRole(id));
 
 		for (json &elem : val["embed"])
 			this->embeds.emplace_back(elem);
@@ -88,7 +88,7 @@ namespace DisCXXord
 			this->guild = &*this->channel.guild;
 
 		for (auto &id : val["mention_roles"])
-			this->mentionRoles.emplace_back(&this->guild->getRole(id));
+			this->mentionRoles.emplace_back(this->guild->getRole(id));
 
 		for (auto &elem : val["embed"])
 			this->embeds.emplace_back(elem);

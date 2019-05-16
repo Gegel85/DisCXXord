@@ -57,7 +57,7 @@ namespace DisCXXord
 		VerificationLvl verificationLevel;
 		std::vector<Role> roles;
 		std::vector<Member> members;
-		std::vector<Channel *> channels;
+		std::vector<std::reference_wrapper<Channel>> channels;
 		Optional<Channel> afkChannel;
 		Optional<Channel> embedsChannel;
 		Optional<Channel> widgetChannel;

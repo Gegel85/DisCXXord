@@ -27,8 +27,10 @@ namespace DisCXXord
 		throw InvalidChannelException("Cannot cache a message in a VoiceChannel");
 	}
 
-	Message& VoiceChannel::getLastMessage()
+	Message &VoiceChannel::getLastMessage()
 	{
 		throw InvalidChannelException("Cannot get a message from a VoiceChannel");
 	}
+
+
 }

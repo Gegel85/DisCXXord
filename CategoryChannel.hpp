@@ -12,8 +12,8 @@ namespace DisCXXord
 		CategoryChannel(Client &client, json val);
 		~CategoryChannel() override = default;
 
-		Message & send(const SendingMessage &content) override;
-		Message & getMessage(const std::string &id) override;
+		Message &send(const SendingMessage &content) override;
+		Message &getMessage(const std::string &id) override;
 		Message &getLastMessage() override;
 		void cacheMessage(Message *) override;
 	};

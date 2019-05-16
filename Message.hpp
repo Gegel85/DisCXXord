@@ -47,7 +47,7 @@ namespace DisCXXord
 		bool			tts;
 		bool			mentionEveryone;
 		std::vector<Mention>	mentions;
-		std::vector<Role *>	mentionRoles;
+		std::vector<std::reference_wrapper<Role>>	mentionRoles;
 		std::vector<Attachement>attachements;
 		std::vector<Embed>	embeds;
 		std::vector<Reaction>	reactions;

@@ -9,6 +9,6 @@
 
 #define LIBNAME	"disc++ord"
 #define LIBLINK	"https://github.com/Gegel85/DisCXXord"
-#define VERSION	"ALPHA 0.0.2"
+#define VERSION	"ALPHA 0.0.3"
 
 #endif //DISC_ORD_DEFINES_HPP

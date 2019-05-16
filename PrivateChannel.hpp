@@ -10,7 +10,7 @@ namespace DisCXXord
 	class PrivateChannel : public Channel {
 	private:
 		std::vector<SharedPtr<Message>>	_cachedMessages;
-		std::string				_lastMsgId;
+		std::string			_lastMsgId;
 
 	public:
 		PrivateChannel(Client &client, json val);

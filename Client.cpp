@@ -434,6 +434,8 @@ namespace DisCXXord
 		if (this->_handlers.ready)
 			try {
 				this->_handlers.ready(*this);
+			} catch (CorruptedCacheException &) {
+				throw;
 			} catch (std::exception &e) {
 				#ifdef __GNUG__
 				this->logger.error("Caught exception in onReady function: " + getLastExceptionName() + ": " + e.what());
@@ -549,6 +551,8 @@ namespace DisCXXord
 		if (this->_handlers.messageCreate)
 			try {
 				this->_handlers.messageCreate(*this, *msg);
+			} catch (CorruptedCacheException &) {
+				throw;
 			} catch (std::exception &e) {
 				#ifdef __GNUG__
 				this->logger.error("Caught exception in onMessageCreate function: " + getLastExceptionName() + ": " + e.what());
