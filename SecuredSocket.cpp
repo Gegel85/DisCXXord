@@ -23,6 +23,7 @@ namespace DisCXXord
 	{
 		if (this->_connection)
 			SSL_shutdown(this->_connection);
+		SSL_CTX_free(this->_ssl_ctx);
 	}
 
 	void	SecuredSocket::connect(unsigned int ip, unsigned short portno)

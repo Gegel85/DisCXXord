@@ -22,26 +22,32 @@ using json = nlohmann::json;
 
 #ifdef __GNUG__
 #include <cxxabi.h>
-
-std::string getLastExceptionName()
-{
-	int status;
-
-	if (!abi::__cxa_current_exception_type())
-		return "No exception";
-	auto val = abi::__cxa_current_exception_type();
-
-	if (!val)
-		return "No exception";
-	return abi::__cxa_demangle(val->name(), nullptr, nullptr, &status);
-}
-
 #endif
 
 #include <iostream>
 
 namespace DisCXXord
 {
+	#ifdef __GNUG__
+	std::string getLastExceptionName()
+	{
+		int status;
+		char *value;
+		std::string name;
+
+		if (!abi::__cxa_current_exception_type())
+			return "No exception";
+		auto val = abi::__cxa_current_exception_type();
+
+		if (!val)
+			return "No exception";
+		value = abi::__cxa_demangle(val->name(), nullptr, nullptr, &status);
+		name = value;
+		free(value);
+		return name;
+	}
+	#endif
+
 //Public
 	Client::Client(const std::string &logpath, DisCXXord::Logger::LogLevel level) :
 		logger(logpath, level),
