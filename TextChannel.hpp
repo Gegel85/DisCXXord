@@ -25,6 +25,7 @@ namespace DisCXXord
 		TextChannel(Client &client, json val);
 		~TextChannel() override = default;
 
+		void startTyping() override;
 		Message &send(const SendingMessage &content) override;
 		Message &getMessage(const std::string &id) override;
 		Message &getLastMessage() override;

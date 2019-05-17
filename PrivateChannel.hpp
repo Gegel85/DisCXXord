@@ -16,6 +16,7 @@ namespace DisCXXord
 		PrivateChannel(Client &client, json val);
 		~PrivateChannel() override = default;
 
+		void startTyping() override;
 		Message &send(const SendingMessage &content) override;
 		Message &getMessage(const std::string &id) override;
 		Message &getLastMessage() override;

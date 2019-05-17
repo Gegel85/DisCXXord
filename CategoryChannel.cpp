@@ -31,4 +31,9 @@ namespace DisCXXord
 	{
 		throw InvalidChannelException("Cannot get a message from a CategoryChannel");
 	}
+
+	void CategoryChannel::startTyping()
+	{
+		throw InvalidChannelException("Cannot type in a CategoryChannel");
+	}
 }

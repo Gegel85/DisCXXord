@@ -227,10 +227,9 @@ namespace DisCXXord
 			}
 		};
 
-		if (!body.empty()) {
+		if (!body.empty())
 			result.headers["Content-Type"] = "application/json";
-			result.headers["Content-Length"] = std::to_string(body.size());
-		}
+		result.headers["Content-Length"] = std::to_string(body.size());
 		this->logger.debug(method + ": " + API_BASE_URL + endpt + " \"" + body + "\"");
 		result = Request::request(result);
 		//TODO: Handle 429 and 502
@@ -240,7 +239,7 @@ namespace DisCXXord
 			throw APIErrorException(method + ": " API_BASE_URL + endpt + ": " + std::to_string(result.code) + " " + result.codeName, result.body, result.code);
 		}
 		this->logger.debug(std::to_string(result.code) + " (" + result.codeName + "): \"" + result.body + "\"");
-		return json::parse(result.body);
+		return result.code == 204 ? "null"_json : json::parse(result.body);
 	}
 
 

@@ -64,6 +64,7 @@ namespace DisCXXord
 
 		CategoryChannel &parent();
 
+		virtual void startTyping() = 0;
 		virtual Message &send(const SendingMessage &content) = 0;
 		virtual Message &getMessage(const std::string &id) = 0;
 		virtual Message &getLastMessage() = 0;

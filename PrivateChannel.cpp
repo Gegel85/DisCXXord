@@ -46,4 +46,9 @@ namespace DisCXXord
 	{
 		this->_cachedMessages.emplace_back(msg);
 	}
+
+	void PrivateChannel::startTyping()
+	{
+		this->_parent.makeApiRequest(CHANNEL_ENDPT"/" + this->id + TYPING_ENDPT, "", "POST");
+	}
 }

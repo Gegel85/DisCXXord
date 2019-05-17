@@ -46,6 +46,8 @@ int	main()
 					}
 				});
 				client.disconnect();
+			} else if (message.content == "!type") {
+				message.channel.startTyping();
 			}
 		}
 	});

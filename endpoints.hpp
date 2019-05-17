@@ -12,5 +12,6 @@
 #define ROLES_ENDPT	"/roles"
 #define CHANNEL_ENDPT	"/channels"
 #define MSG_ENDPT	"/messages"
+#define TYPING_ENDPT	"/typing"
 
 #endif

@@ -32,5 +32,8 @@ namespace DisCXXord
 		throw InvalidChannelException("Cannot get a message from a VoiceChannel");
 	}
 
-
+	void VoiceChannel::startTyping()
+	{
+		throw InvalidChannelException("Cannot type in VoiceChannel");
+	}
 }

@@ -16,6 +16,7 @@ namespace DisCXXord
 		Message &send(const SendingMessage &msg) override;
 		Message &getMessage(const std::string &id) override;
 		Message &getLastMessage() override;
+		void startTyping() override;
 		void cacheMessage(Message *) override;
 	};
 }
