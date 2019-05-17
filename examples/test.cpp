@@ -1,6 +1,5 @@
 #include <iostream>
-#include "Client.hpp"
-#include "Request.hpp"
+#include <DisC++ord.hpp>
 
 using namespace DisCXXord;
 

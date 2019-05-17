@@ -27,6 +27,5 @@
 #include "Snowflake.hpp"
 #include "Socket.hpp"
 #include "TextChannel.hpp"
-#include "token.hpp"
 #include "User.hpp"
 #include "VoiceChannel.hpp"

@@ -43,6 +43,10 @@ LD_FLAGS = -lssl
 help:
 	echo use 'make linux' if you are on linux and 'make windows' if on windows
 
+$(EXAMPLENAME):
+		$(CXX) -o examples/test.o -c examples/test.cpp $(CXXFLAGS) -I include
+		$(CXX) -o $(EXAMPLENAME) examples/test.o -L. -ldisc++ord-dynamic
+
 $(STATICNAME):	$(OBJ)
 		$(AR) rc $(STATICNAME) $(OBJ)
 
@@ -52,9 +56,9 @@ $(WINSONAME):	$(OBJ)
 $(LINSONAME):	$(OBJ)
 		$(CXX) -o $(LINSONAME) $(OBJ) -shared $(LD_FLAGS)
 
-windows:	$(STATICNAME) $(WINSONAME)
+windows:	$(STATICNAME) $(WINSONAME) $(EXAMPLENAME)
 
-linux:		$(STATICNAME) $(LINSONAME)
+linux:		$(STATICNAME) $(LINSONAME) $(EXAMPLENAME)
 
 clean:
 		$(RM) $(OBJ) $(LINSONAME) $(WINSONAME) $(STATICNAME)
