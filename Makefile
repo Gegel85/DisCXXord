@@ -30,7 +30,7 @@ SRC =	SecuredSocket.cpp		\
 		PermissionOverwrite.cpp	\
 		SharedPtr.cpp			\
 
-OBJ =	$(SRC:%.cpp=%.o)
+OBJ =	$(SRC:%.cpp=src/%.o)
 
 CXX =	g++
 
