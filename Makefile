@@ -61,9 +61,7 @@ windows:	$(STATICNAME) $(WINSONAME) $(EXAMPLENAME)
 linux:		$(STATICNAME) $(LINSONAME) $(EXAMPLENAME)
 
 clean:
-		$(RM) $(OBJ) $(LINSONAME) $(WINSONAME) $(STATICNAME)
-
-fclean:	clean
+		$(RM) $(OBJ) $(LINSONAME) $(WINSONAME) $(STATICNAME) $(EXAMPLENAME)
 
 dbgw:	CXXFLAGS += -g -O0
 dbgw:	clean windows
