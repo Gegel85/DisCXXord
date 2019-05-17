@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Client.hpp"
 #include "Request.hpp"
-#include "token.hpp"
 
 using namespace DisCXXord;
 
@@ -23,23 +22,23 @@ void	ready(Client &client)
 	}
 }
 
-int	main()
+void	runBot(std::string token)
 {
-	Client	client("./disc++ord.log", Logger::DEBUG);
+	Client	client("./disc++ord.log", Logger::INFO);
 
 	client.setHandlers({
 		.ready = ready,
 		.messageCreate = [](Client &client, Message &message) {
 			if (message.content == "!disconnect") {
 				message.reply({
-					.content = "",
-					.embed = {
-						"Disconnecting",          //title
-						"Leaving discord",        //description
-						"",                       //url
-						Date::now(),              //timestamp
-						0xFF0000,                 //color
-						EmbedFooter{              //footer
+					"",	//Content
+					{	//Embed
+						"Disconnecting",          //Title
+						"Leaving discord",        //Description
+						"",                       //Url
+						Date::now(),              //Timestamp
+						0xFF0000,                 //Color
+						EmbedFooter{              //Footer
 							message.author.username,
 							message.user->avatarURL()
 						}
@@ -51,6 +50,15 @@ int	main()
 			}
 		}
 	});
-	client.run("Bot " TOKEN);
+	client.run("Bot " + token);
+}
+
+int	main(int argc, char **argv)
+{
+	if (argc != 2) {
+		std::cout << "Usage: " << argv[0] << " <bot token>" << std::endl;
+		return EXIT_FAILURE;
+	}
+	runBot(argv[1]);
 	return EXIT_SUCCESS;
 }

@@ -1,0 +1,151 @@
+cmake_minimum_required(VERSION 3.13)
+project(disc++ord)
+
+set(CMAKE_CXX_STANDARD 17)
+
+include_directories(include)
+
+add_library(
+	disc++ord-static
+	src/Attachement.cpp
+	src/Attachement.hpp
+	src/CategoryChannel.cpp
+	src/CategoryChannel.hpp
+	src/Channel.cpp
+	src/Channel.hpp
+	src/Client.cpp
+	src/Client.hpp
+	src/Date.cpp
+	src/Date.hpp
+	src/defines.hpp
+	src/Embed.cpp
+	src/Embed.hpp
+	src/endpoints.hpp
+	src/Exceptions.hpp
+	src/Guild.cpp
+	src/Guild.hpp
+	src/Logger.cpp
+	src/Logger.hpp
+	src/Member.cpp
+	src/Member.hpp
+	src/Message.cpp
+	src/Message.hpp
+	src/Optional.hpp
+	src/PartialUser.cpp
+	src/PartialUser.hpp
+	src/PermissionOverwrite.cpp
+	src/PermissionOverwrite.hpp
+	src/Permissions.cpp
+	src/Permissions.hpp
+	src/platform.hpp
+	src/PrivateChannel.cpp
+	src/PrivateChannel.hpp
+	src/Reaction.cpp
+	src/Reaction.hpp
+	src/Request.cpp
+	src/Request.hpp
+	src/Role.cpp
+	src/Role.hpp
+	src/SecuredSocket.cpp
+	src/SecuredSocket.hpp
+	src/SecuredWebSocket.cpp
+	src/SecuredWebSocket.hpp
+	src/SendingMessage.hpp
+	src/SharedPtr.cpp
+	src/SharedPtr.hpp
+	src/Snowflake.cpp
+	src/Snowflake.hpp
+	src/Socket.cpp
+	src/Socket.hpp
+	src/TextChannel.cpp
+	src/TextChannel.hpp
+	src/User.cpp
+	src/User.hpp
+	src/VoiceChannel.cpp
+	src/VoiceChannel.hpp
+	src/nlohmann/json.hpp
+)
+
+add_library(
+	disc++ord-dynamic SHARED
+	src/Attachement.cpp
+	src/Attachement.hpp
+	src/CategoryChannel.cpp
+	src/CategoryChannel.hpp
+	src/Channel.cpp
+	src/Channel.hpp
+	src/Client.cpp
+	src/Client.hpp
+	src/Date.cpp
+	src/Date.hpp
+	src/defines.hpp
+	src/Embed.cpp
+	src/Embed.hpp
+	src/endpoints.hpp
+	src/Exceptions.hpp
+	src/Guild.cpp
+	src/Guild.hpp
+	src/Logger.cpp
+	src/Logger.hpp
+	src/Member.cpp
+	src/Member.hpp
+	src/Message.cpp
+	src/Message.hpp
+	src/Optional.hpp
+	src/PartialUser.cpp
+	src/PartialUser.hpp
+	src/PermissionOverwrite.cpp
+	src/PermissionOverwrite.hpp
+	src/Permissions.cpp
+	src/Permissions.hpp
+	src/platform.hpp
+	src/PrivateChannel.cpp
+	src/PrivateChannel.hpp
+	src/Reaction.cpp
+	src/Reaction.hpp
+	src/Request.cpp
+	src/Request.hpp
+	src/Role.cpp
+	src/Role.hpp
+	src/SecuredSocket.cpp
+	src/SecuredSocket.hpp
+	src/SecuredWebSocket.cpp
+	src/SecuredWebSocket.hpp
+	src/SendingMessage.hpp
+	src/SharedPtr.cpp
+	src/SharedPtr.hpp
+	src/Snowflake.cpp
+	src/Snowflake.hpp
+	src/Socket.cpp
+	src/Socket.hpp
+	src/TextChannel.cpp
+	src/TextChannel.hpp
+	src/User.cpp
+	src/User.hpp
+	src/VoiceChannel.cpp
+	src/VoiceChannel.hpp
+	src/nlohmann/json.hpp
+)
+
+if(WIN32)
+	target_link_libraries(
+		disc++ord-dynamic
+		ssl
+		ws2_32
+	)
+else()
+	target_link_libraries(
+		disc++ord-dynamic
+		ssl
+	)
+endif()
+
+add_executable(
+	example
+	examples/test.cpp
+)
+
+target_link_libraries(
+	example
+	disc++ord-dynamic
+)

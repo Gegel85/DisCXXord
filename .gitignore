@@ -5,8 +5,6 @@
 *.log
 .idea
 cmake-build-*
-CMakeLists.txt
+build
 a.exe
 a.out
-token.hpp
-flux.cpp

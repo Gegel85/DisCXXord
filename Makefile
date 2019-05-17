@@ -1,8 +1,10 @@
-STATICNAME=	libdisc++ord-static.a
+EXAMPLENAME=	example
 
-WINSONAME =	libdisc++ord-dynamic.dll
+STATICNAME =	libdisc++ord-static.a
 
-LINSONAME =	libdisc++ord-dynamic.so
+WINSONAME  =	libdisc++ord-dynamic.dll
+
+LINSONAME  =	libdisc++ord-dynamic.so
 
 SRC =	SecuredSocket.cpp		\
 		SecuredWebSocket.cpp	\
