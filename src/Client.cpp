@@ -220,14 +220,14 @@ namespace DisCXXord
 
 	json Client::makeApiRequest(const std::string &endpt, const std::string &body, const std::string &method)
 	{
-		Request::HttpRequest	result{
-			.method = method,
-			.url = API_BASE_URL + endpt,
-			.body = body,
-			.headers = {
-				{"Authorization", this->_token},
-				{"User-Agent", "DiscordBot (" LIBLINK ", " VERSION ")"}
-			}
+		Request::HttpRequest	result;
+
+	        result.method = method;
+		result.url = API_BASE_URL + endpt;
+		result.body = body;
+		result.headers = {
+			{"Authorization", this->_token},
+			{"User-Agent", "DiscordBot (" LIBLINK ", " VERSION ")"}
 		};
 
 		if (!body.empty())
