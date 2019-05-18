@@ -14,7 +14,6 @@ namespace DisCXXord
 	Message &PrivateChannel::send(const SendingMessage &msg)
 	{
 		if (msg.files.empty()) {
-			this->_parent.logger.info("Create string");
 			std::string request = "{"
 				R"("tts":)" + std::string(msg.tts ? "true" : "false") + ","
 				R"("embed":)" + msg.embed.dump() + ","
