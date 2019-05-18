@@ -21,8 +21,8 @@ namespace DisCXXord
 
 	SecuredSocket::~SecuredSocket()
 	{
-		if (this->_connection)
-			SSL_shutdown(this->_connection);
+		if (this->isOpen())
+			this->disconnect();
 		SSL_CTX_free(this->_ssl_ctx);
 	}
 

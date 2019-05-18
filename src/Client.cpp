@@ -83,6 +83,9 @@ namespace DisCXXord
 			#else
 			this->logger.critical("Caught exception: " + e.what());
 			#endif
+			try {
+				this->disconnect();
+			} catch (std::exception &) {}
 			this->_disconnected = true;
 		}
 		if (this->_hbInfos._heartbeatThread.joinable())
