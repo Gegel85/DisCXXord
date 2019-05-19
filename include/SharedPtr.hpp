@@ -71,7 +71,9 @@ namespace DisCXXord
 		{
 			this->_destroy();
 			this->_destroyable = destroyable;
-			*this = ptr;
+			if (destroyable)
+				__allocated_memory.emplace_back(ptr);
+			this->_value = ptr;
 		}
 
 		bool isDestroyable() const

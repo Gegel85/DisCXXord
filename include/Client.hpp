@@ -25,6 +25,20 @@ namespace DisCXXord
 			void (*messageCreate)(Client &, Message &);
 		};
 
+		enum OP_CODES {
+			DISPATCH_OP,
+			HEARTBEAT_OP,
+			IDENTIFY_OP,
+			STATUS_UPDATE_OP,
+			VOICE_STATE_UPDATE,
+			RESUME_OP = 6,
+			RECONNECT_OP,
+			REQUEST_GUILD_MEMBER_OP,
+			INVALID_SESSION_OP,
+			HELLO_OP,
+			HEARTBEAT_ACK_OP,
+		};
+
 		explicit Client(const std::string &logpath = "./disc++ord.log", Logger::LogLevel level = Logger::INFO);
 		~Client();
 		User &me();
@@ -49,13 +63,16 @@ namespace DisCXXord
 		Optional<std::string> _timedGetAnswer(int time);
 		Channel *_createChannel(json value);
 		Channel *_createChannel(json value, Guild &guild);
+		void _resume();
 		void _connect();
+		void _reconnect();
 		void _heartbeatLoop();
 		void _handleWebSocket();
 		void _identify();
 		void _heartbeat(bool waitAnswer = false);
 		void _treatWebSocketPayloads();
 		void _handlePayload(json &);
+		void _verifyToken();
 
 		//Events functions
 		void _ready(json &val);
@@ -144,6 +161,7 @@ namespace DisCXXord
 		std::vector<SharedPtr<Channel>>	_cachedChannels;
 		std::vector<std::string>	_guilds;
 		std::string 			_token;
+		std::string			_sessionId;
 		SecuredWebSocket		_webSocket;
 		clientHandlers			_handlers;
 		HeartbeatInfos			_hbInfos;

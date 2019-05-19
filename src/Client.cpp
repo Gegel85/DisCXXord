@@ -20,6 +20,7 @@
 
 using json = nlohmann::json;
 
+#define pcall(fct) do {try {fct();} catch (std::exception &) {}} while(0)
 #ifdef __GNUG__
 #include <cxxabi.h>
 #endif
@@ -72,9 +73,11 @@ namespace DisCXXord
 	{
 		if (this->_running)
 			throw RunningException("This client is already running");
+		this->logger.info(LIBNAME " version " VERSION);
 		this->_running = true;
 		this->_token = token;
 		try {
+			this->_verifyToken();
 			this->_connect();
 			this->_handleWebSocket();
 		} catch (std::exception &e) {
@@ -83,9 +86,7 @@ namespace DisCXXord
 			#else
 			this->logger.critical("Caught exception: " + e.what());
 			#endif
-			try {
-				this->disconnect();
-			} catch (std::exception &) {}
+			pcall(this->disconnect);
 			this->_disconnected = true;
 		}
 		if (this->_hbInfos._heartbeatThread.joinable())
@@ -249,6 +250,43 @@ namespace DisCXXord
 
 
 //Private
+	void Client::_resume()
+	{
+
+	}
+
+	void Client::_reconnect()
+	{
+		if (this->_disconnected) {
+
+		}
+		this->disconnect();
+	}
+
+	void Client::_verifyToken()
+	{
+		this->logger.debug("Getting current user");
+		this->_me.emplace(*this, this->makeApiRequest(USER_ME_ENDPT));
+		this->logger.info("Connected on " + this->_me->tag());
+	}
+
+	void Client::_identify()
+	{
+		json	payload = {
+			{"op", IDENTIFY_OP},
+			{"d", {
+				{"token", this->_token},
+				{"properties", {
+					{"$os", PLATFORM_NAME},
+					{"$browser", LIBNAME},
+					{"$device", LIBNAME}
+				}}
+			}}
+		};
+
+		this->_webSocket.send(payload.dump());
+	}
+
 	Channel *Client::_createChannel(json value, Guild &guild)
 	{
 		auto type = static_cast<Channel::Type>(value["type"]);
@@ -285,54 +323,40 @@ namespace DisCXXord
 
 	void Client::_heartbeat(bool waitAnswer)
 	{
-		std::string	payload = "{"
-			"\"op\": 1,"
-			"\"d\": " + (this->_hbInfos._lastSValue ? std::to_string(*this->_hbInfos._lastSValue) : "null") +
-		"}";
+		json	payload = {
+			{"op", HEARTBEAT_OP},
+			{"d", (this->_hbInfos._lastSValue ? std::to_string(*this->_hbInfos._lastSValue) : "null")}
+		};
 
 		if (!this->_hbInfos._isAcknoledged)
 			this->logger.warning("Server didn't acknowledged previous heartbeat");
 		this->logger.debug("Sending heartbeat");
-		this->_webSocket.send(payload);
+		this->_webSocket.send(payload.dump());
 		this->_hbInfos._lastHeartbeat = std::chrono::system_clock::now();
 		this->_hbInfos._isAcknoledged = !waitAnswer;
-	}
-
-	void Client::_identify()
-	{
-		std::string	payload = "{"
-			"\"op\": 2,"
-			"\"d\": {"
-				"\"token\": \"" + this->_token + "\","
-  				"\"properties\": {"
-					"\"$os\": \"" PLATFORM_NAME "\","
-					"\"$browser\": \"" LIBNAME "\","
-					"\"$device\": \"" LIBNAME "\""
-				"}"
-			"}"
-		"}";
-
-		this->_webSocket.send(payload);
 	}
 
 	void Client::_handlePayload(json &object)
 	{
 		switch (object["op"].get<int>()) {
-		case 0:
+		case DISPATCH_OP:
 			this->logger.debug("Got payload " + object["t"].get<std::string>());
 			this->_hbInfos._lastSValue = object["s"];
 			this->_dispatchEvents[object["t"]](
 				object["d"]
 			);
 			break;
-		case 1:
+		case HEARTBEAT_OP:
 			this->logger.debug("Server requests heartbeat");
 			this->_heartbeat();
 			break;
-		case 11:
+		case HEARTBEAT_ACK_OP:
 			this->logger.debug("Server acknowledged heartbeat");
 			this->_hbInfos._isAcknoledged = true;
 			this->_hbInfos._nbNotAcknoledge = 0;
+			break;
+		default:
+			this->logger.warning("Unknown opcode " + std::to_string(object["op"].get<int>()) + " has been ignored");
 		}
 	}
 
@@ -370,10 +394,6 @@ namespace DisCXXord
 
 	void Client::_connect()
 	{
-		this->logger.info(LIBNAME " version " VERSION);
-		this->logger.debug("Getting current user");
-		this->_me.emplace(*this, this->makeApiRequest(USER_ME_ENDPT));
-		this->logger.info("Connected on " + this->_me->tag());
 		this->logger.debug("Fetching gateway URL");
 
 		json object = this->makeApiRequest(GATEWAY_ENDPT);
@@ -390,10 +410,10 @@ namespace DisCXXord
 			throw TimeoutException("Gateway didn't reply to the identify request");
 		}
 
-		if (object["op"] == 10)
+		if (object["op"] == HELLO_OP)
 			this->logger.info("Received HELLO from gateway");
 		else
-			throw std::invalid_argument("Gateway didn't send Hello");
+			throw ConnectException("Gateway didn't send Hello");
 		this->_hbInfos._heartbeatInterval = static_cast<size_t>(object["d"]["heartbeat_interval"]);
 		this->logger.debug("Default heartbeat interval is " + std::to_string(this->_hbInfos._heartbeatInterval));
 		this->logger.debug("Sending Identify event");
