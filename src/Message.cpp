@@ -18,7 +18,7 @@ namespace DisCXXord
 			this->guild = &client.getGuild(val["guild_id"]);
 
 		if (!val["member"].is_null())
-			this->member = &this->guild->getMember(this->author.id);
+			this->member.reset(&this->guild->getMember(this->author.id));
 
 		if (!this->webhookId)
 			this->user = &client.getUser(this->author.id);
@@ -69,7 +69,7 @@ namespace DisCXXord
 			this->guild = &client.getGuild(val["guild_id"]);
 
 		if (!val["member"].is_null())
-			this->member = &this->guild->getMember(this->author.id);
+			this->member.reset(&this->guild->getMember(this->author.id));
 
 		if (!this->webhookId)
 			this->user = &client.getUser(this->author.id);
