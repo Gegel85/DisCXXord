@@ -1,6 +1,10 @@
 #include "nlohmann/json.hpp"
 #include "Snowflake.hpp"
 
+#if INTPTR_MAX != INT64_MAX
+#	error You need to compile the library in 64 bits
+#endif
+
 using json = nlohmann::json;
 
 namespace DisCXXord
