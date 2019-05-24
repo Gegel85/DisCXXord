@@ -15,7 +15,7 @@ namespace DisCXXord
 		pinned{val["pinned"]}
 	{
 		if (!val["guild_id"].is_null())
-			this->guild = &client.getGuild(val["guild_id"]);
+			this->guild.reset(&client.getGuild(val["guild_id"]));
 
 		if (!val["member"].is_null())
 			this->member.reset(&this->guild->getMember(this->author.id));
@@ -24,17 +24,15 @@ namespace DisCXXord
 			this->user = &client.getUser(this->author.id);
 
 		for (auto &mention : val["mention"]) {
+			this->mentions.emplace_back(Mention{client.getUser(mention["id"]), nullptr});
 			try {
-				this->mentions.emplace_back(Mention{client.getUser(mention["id"]), &this->guild->getMember(mention["id"])});
+				this->mentions.back().member.reset(&this->guild->getMember(mention["id"]));
 			} catch (EmptyValueException &) {
-				this->mentions.emplace_back(Mention{client.getUser(mention["id"]), nullptr});
-			} catch (MemberNotFoundException &) {
-				this->mentions.emplace_back(Mention{client.getUser(mention["id"]), nullptr});
-			}
+			} catch (MemberNotFoundException &) {}
 		}
 
 		if (!this->guild && this->channel.guild)
-			this->guild = &*this->channel.guild;
+			this->guild.reset(&*this->channel.guild);
 
 		for (auto &id : val["mention_roles"])
 			this->mentionRoles.emplace_back(this->guild->getRole(id));
@@ -43,7 +41,7 @@ namespace DisCXXord
 			this->embeds.emplace_back(elem);
 
 		if (!this->embeds.empty())
-			this->embed = &this->embeds.front();
+			this->embed.reset(&this->embeds.front());
 
 		if (!val["webhook_id"].is_null())
 			this->webhookId = Snowflake(client, val["webhook_id"]);
@@ -66,7 +64,7 @@ namespace DisCXXord
 		pinned{val["pinned"]}
 	{
 		if (!val["guild_id"].is_null())
-			this->guild = &client.getGuild(val["guild_id"]);
+			this->guild.reset(&client.getGuild(val["guild_id"]));
 
 		if (!val["member"].is_null())
 			this->member.reset(&this->guild->getMember(this->author.id));
@@ -75,17 +73,15 @@ namespace DisCXXord
 			this->user = &client.getUser(this->author.id);
 
 		for (auto &mention : val["mention"]) {
+			this->mentions.emplace_back(Mention{client.getUser(mention["id"]), nullptr});
 			try {
-				this->mentions.emplace_back(Mention{client.getUser(mention["id"]), &this->guild->getMember(mention["id"])});
+				this->mentions.back().member.reset(&this->guild->getMember(mention["id"]));
 			} catch (EmptyValueException &) {
-				this->mentions.emplace_back(Mention{client.getUser(mention["id"]), nullptr});
-			} catch (MemberNotFoundException &) {
-				this->mentions.emplace_back(Mention{client.getUser(mention["id"]), nullptr});
-			}
+			} catch (MemberNotFoundException &) {}
 		}
 
 		if (!this->guild && this->channel.guild)
-			this->guild = &*this->channel.guild;
+			this->guild.reset(&*this->channel.guild);
 
 		for (auto &id : val["mention_roles"])
 			this->mentionRoles.emplace_back(this->guild->getRole(id));
@@ -94,7 +90,7 @@ namespace DisCXXord
 			this->embeds.emplace_back(elem);
 
 		if (!this->embeds.empty())
-			this->embed = &this->embeds.front();
+			this->embed.reset(&this->embeds.front());
 
 		if (!val["webhook_id"].is_null())
 			this->webhookId = Snowflake(client, val["webhook_id"]);

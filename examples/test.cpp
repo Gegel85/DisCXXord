@@ -21,9 +21,9 @@ void	ready(Client &client)
 	}
 }
 
-void	runBot(std::string token)
+void	runBot(const std::string &token, bool debug)
 {
-	Client	client("./disc++ord.log", Logger::INFO);
+	Client	client("./disc++ord.log", debug ? Logger::DEBUG : Logger::INFO);
 
 	client.setHandlers({
 		.ready = ready,
@@ -54,10 +54,10 @@ void	runBot(std::string token)
 
 int	main(int argc, char **argv)
 {
-	if (argc != 2) {
+	if (argc != 2 && argc != 3) {
 		std::cout << "Usage: " << argv[0] << " <bot token>" << std::endl;
 		return EXIT_FAILURE;
 	}
-	runBot(argv[1]);
+	runBot(argv[1], argc == 3 && strcmp(argv[2], "debug") == 0);
 	return EXIT_SUCCESS;
 }

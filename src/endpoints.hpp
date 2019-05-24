@@ -13,5 +13,6 @@
 #define CHANNEL_ENDPT	"/channels"
 #define MSG_ENDPT	"/messages"
 #define TYPING_ENDPT	"/typing"
+#define OAUTH_ME_ENDPT	"/oauth2/applications/@me"
 
 #endif

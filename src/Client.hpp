@@ -57,7 +57,8 @@ namespace DisCXXord
 		void run(const std::string &token);
 		json makeApiRequest(const std::string &endpt, const std::string &body = "", const std::string &method = "GET");
 
-		Logger	logger;
+		Logger			logger;
+		Optional<PartialUser>	owner;
 
 	private:
 		Optional<std::string> _timedGetAnswer(int time);

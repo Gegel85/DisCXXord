@@ -12,6 +12,7 @@
 #include "TextChannel.hpp"
 #include "VoiceChannel.hpp"
 #include "PrivateChannel.hpp"
+#include "PartialUser.hpp"
 
 #ifndef _WINDOWS_DISCXXORD
 #	include <sys/select.h>
@@ -24,8 +25,6 @@ using json = nlohmann::json;
 #ifdef __GNUG__
 #include <cxxabi.h>
 #endif
-
-#include <iostream>
 
 namespace DisCXXord
 {
@@ -304,6 +303,14 @@ namespace DisCXXord
 		this->logger.debug("Getting current user");
 		this->_me.emplace(*this, this->makeApiRequest(USER_ME_ENDPT));
 		this->logger.info("Connected on " + this->_me->tag());
+		if (!this->_me->bot)
+			return;
+		try {
+			json val = this->makeApiRequest(OAUTH_ME_ENDPT);
+
+			this->owner = new PartialUser{*this, val["owner"]};
+			this->logger.debug("My owner is " + owner->username + " (id: " + owner->id + ")");
+		} catch (APIErrorException &e) {}
 	}
 
 	void Client::_identify()
@@ -487,6 +494,7 @@ namespace DisCXXord
 					pcall(this->disconnect);
 					this->_disconnected = true;
 					this->_running = false;
+					this->_reconnecting = false;
 				}
 			}};
 	}

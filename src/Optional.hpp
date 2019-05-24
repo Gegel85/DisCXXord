@@ -70,6 +70,24 @@ namespace DisCXXord
 			return *this;
 		};
 
+		Optional<type> &operator=(Optional<type> &obj) noexcept
+		{
+			if (obj)
+				this->_value.reset(new type(*obj));
+			else
+				this->_value.reset();
+			return *this;
+		};
+
+		Optional<type> &operator=(Optional<type> &&obj) noexcept
+		{
+			if (obj)
+				this->_value.reset(new type(*obj));
+			else
+				this->_value.reset();
+			return *this;
+		};
+
 		Optional<type> &operator=(type &&new_obj)
 		{
 			this->_value.reset(new type(new_obj));
