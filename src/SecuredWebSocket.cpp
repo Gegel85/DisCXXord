@@ -119,7 +119,7 @@ namespace DisCXXord
 				static_cast<unsigned char>(this->read(1)[0]);
 		else if (length == 127)
 			length = (static_cast<unsigned char>(this->read(1)[0]) << 24U) +
-				(static_cast<unsigned char>(this->read(1)[0] << 16U)) +
+				(static_cast<unsigned char>(this->read(1)[0]) << 16U) +
 				(static_cast<unsigned char>(this->read(1)[0]) << 8U) +
 				static_cast<unsigned char>(this->read(1)[0]);
 
@@ -148,6 +148,24 @@ namespace DisCXXord
 		return result;
 	}
 
+	void SecuredWebSocket::disconnect()
+	{
+		std::stringstream stream;
+		std::string	result = "\x03\xe8";
+		unsigned	random_value = this->_rand();
+		std::string	key = std::string() +
+			static_cast<char>((random_value >> 24U) & 0xFFU) +
+			static_cast<char>((random_value >> 16U) & 0xFFU) +
+			static_cast<char>((random_value >> 8U) & 0xFFU) +
+			static_cast<char>(random_value & 0xFFU);
+
+		for (unsigned i = 0; i < result.size(); i++)
+			result[i] = result[i] ^ key[i % 4];
+		stream << "\x88\x82" << key << result;
+		SecuredSocket::send(stream.str());
+		SecuredSocket::disconnect();
+	}
+
 	std::string SecuredWebSocket::getRawAnswer()
 	{
 		std::stringstream	stream;
@@ -170,7 +188,7 @@ namespace DisCXXord
 
 	void SecuredWebSocket::sendHttpRequest(const Socket::HttpRequestIn &request)
 	{
-		std::string requestString = this->generateHttpRequest(request);
+		std::string requestString = generateHttpRequest(request);
 
 		SecuredSocket::send(requestString);
 	}

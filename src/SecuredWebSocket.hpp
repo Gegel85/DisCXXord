@@ -26,6 +26,7 @@ namespace DisCXXord
 		SecuredWebSocket() = default;
 		~SecuredWebSocket() = default;
 		void		send(const std::string &value) override;
+		void		disconnect() override;
 		void		connect(const std::string &host, unsigned short portno) override;
 		void		sendHttpRequest(const HttpRequestIn &request);
 		std::string	getAnswer();
