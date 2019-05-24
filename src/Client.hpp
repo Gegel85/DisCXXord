@@ -165,6 +165,7 @@ namespace DisCXXord
 		SecuredWebSocket		_webSocket;
 		clientHandlers			_handlers;
 		HeartbeatInfos			_hbInfos;
+		bool				_reconnecting = false;
 		bool				_disconnected = false;
 		bool				_running = false;
 	};

@@ -25,11 +25,6 @@ namespace DisCXXord
 		WSADATA			WSAData;
 		WSAStartup(MAKEWORD(2,0), &WSAData);
 	#endif
-
-		/* create the socket */
-		this->_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-		if (this->_sockfd == INVALID_SOCKET)
-			throw SocketCreationErrorException(strerror(errno));
 	}
 
 	Socket::~Socket()
@@ -43,6 +38,11 @@ namespace DisCXXord
 
 		if (this->isOpen())
 			throw AlreadyOpenedException("This socket is already opened");
+
+		/* create the socket */
+		this->_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		if (this->_sockfd == INVALID_SOCKET)
+			throw SocketCreationErrorException(strerror(errno));
 
 		/* lookup the ip address */
 		server = gethostbyname(host.c_str());
@@ -115,12 +115,9 @@ namespace DisCXXord
 	void Socket::disconnect()
 	{
 		if (!this->isOpen())
-			throw NotConnectedException("This socket is not connected to a server");
+			throw NotConnectedException("This socket is not opened");
 		close(this->_sockfd);
 		this->_opened = false;
-		this->_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-		if (this->_sockfd == INVALID_SOCKET)
-			throw SocketCreationErrorException(strerror(errno));
 	}
 
 	std::string Socket::makeRawRequest(const std::string &host, unsigned short portno, const std::string &content)

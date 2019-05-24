@@ -20,7 +20,7 @@
 
 using json = nlohmann::json;
 
-#define pcall(fct) do {try {fct();} catch (std::exception &) {}} while(0)
+#define pcall(fct, ...) do {try {fct(##__VA_ARGS__);} catch (std::exception &) {}} while(0)
 #ifdef __GNUG__
 #include <cxxabi.h>
 #endif
@@ -65,7 +65,9 @@ namespace DisCXXord
 	void Client::disconnect()
 	{
 		this->logger.info("Disconnecting...");
-		this->_webSocket.disconnect();
+		try {
+			this->_webSocket.disconnect();
+		} catch (NotConnectedException &) {}
 		this->_disconnected = true;
 	}
 
@@ -89,6 +91,7 @@ namespace DisCXXord
 			pcall(this->disconnect);
 			this->_disconnected = true;
 		}
+		this->logger.debug("Waiting for heartbeat thread end");
 		if (this->_hbInfos._heartbeatThread.joinable())
 			this->_hbInfos._heartbeatThread.join();
 		this->_running = false;
@@ -252,15 +255,48 @@ namespace DisCXXord
 //Private
 	void Client::_resume()
 	{
+		this->logger.info("Resuming connection to gateway");
+		json	payload = {
+			{"op", RESUME_OP},
+			{"d", {
+				{"token", this->_token},
+				{"session_id", this->_sessionId},
+				{"seq", (this->_hbInfos._lastSValue ? std::to_string(*this->_hbInfos._lastSValue) : "null")}
+			}}
+		};
 
+		this->_webSocket.send(payload.dump());
 	}
 
 	void Client::_reconnect()
 	{
 		if (this->_disconnected) {
-
+			while(this->_disconnected && this->_running)
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			return;
 		}
+		this->_reconnecting = true;
+		this->_hbInfos._isAcknoledged = true;
+		this->_hbInfos._nbNotAcknoledge = 0;
+		this->logger.info("Reconnecting to gateway");
 		this->disconnect();
+		this->logger.debug("Attempting to connect to server");
+		for (int timeToWait = 1; this->_disconnected; timeToWait = timeToWait < 32 ? timeToWait * 2 : timeToWait) {
+			try {
+				this->_connect();
+				this->_disconnected = false;
+				this->_reconnecting = false;
+			} catch (HostNotFoundException &e) {
+				this->logger.error("Cannot reconnect to gateway: HostNotFoundException: " + std::string(e.what()) + ". Trying again in " + std::to_string(timeToWait) + " seconds");
+				std::this_thread::sleep_for(std::chrono::seconds(timeToWait));
+			} catch (ConnectException &e) {
+				this->logger.error("Cannot reconnect to gateway: ConnectException: " + std::string(e.what()) + ". Trying again in " + std::to_string(timeToWait) + " seconds");
+				std::this_thread::sleep_for(std::chrono::seconds(timeToWait));
+			} catch (TimeoutException &e) {
+				this->logger.error("Cannot reconnect to gateway: TimeoutException: " + std::string(e.what()) + ". Trying again in " + std::to_string(timeToWait) + " seconds");
+				std::this_thread::sleep_for(std::chrono::seconds(timeToWait));
+			}
+		}
 	}
 
 	void Client::_verifyToken()
@@ -328,8 +364,13 @@ namespace DisCXXord
 			{"d", (this->_hbInfos._lastSValue ? std::to_string(*this->_hbInfos._lastSValue) : "null")}
 		};
 
-		if (!this->_hbInfos._isAcknoledged)
+		if (!this->_hbInfos._isAcknoledged) {
 			this->logger.warning("Server didn't acknowledged previous heartbeat");
+			this->_hbInfos._nbNotAcknoledge++;
+			if (this->_hbInfos._nbNotAcknoledge >= 2)
+				this->_reconnect();
+		} else
+			this->_hbInfos._nbNotAcknoledge = 0;
 		this->logger.debug("Sending heartbeat");
 		this->_webSocket.send(payload.dump());
 		this->_hbInfos._lastHeartbeat = std::chrono::system_clock::now();
@@ -345,6 +386,12 @@ namespace DisCXXord
 			this->_dispatchEvents[object["t"]](
 				object["d"]
 			);
+			break;
+		case INVALID_SESSION_OP:
+			if (object["d"].get<bool>())
+				this->_resume();
+			else
+				this->_reconnect();
 			break;
 		case HEARTBEAT_OP:
 			this->logger.debug("Server requests heartbeat");
@@ -365,18 +412,26 @@ namespace DisCXXord
 		std::string response;
 
 		while (!this->_disconnected) {
-			fd_set	set;
-			struct timeval	timestruct = {10, 0};
-
-			FD_ZERO(&set);
-			FD_SET(this->_webSocket.getSockFd(), &set);
-			while (!this->_disconnected && timestruct.tv_sec) {
+			try {
 				this->logger.debug("Reading server answer");
 				json object = json::parse(this->_webSocket.getAnswer());
 
 				this->logger.debug("Server sent opcode " + std::to_string(static_cast<int>(object["op"])));
 				this->_handlePayload(object);
+			} catch (EOFException &e) {
+				this->logger.warning("Connection with the server dropped: EOFException: " + std::string(e.what()));
+				this->_reconnect();
+				this->logger.info("Reconnected");
+			} catch (ConnectionTerminatedException &e) {
+				this->logger.warning("Connection with the server dropped: ConnectionTerminatedException: " + std::string(e.what()));
+				if (e.getCode() == 4000 || e.getCode() == 1011 || e.getCode() == 1000 || e.getCode() == 1001)
+					this->_reconnect();
+				else
+					throw;
+				this->logger.info("Reconnected");
 			}
+			while(this->_reconnecting)
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 	}
 
@@ -414,12 +469,26 @@ namespace DisCXXord
 			this->logger.info("Received HELLO from gateway");
 		else
 			throw ConnectException("Gateway didn't send Hello");
-		this->_hbInfos._heartbeatInterval = static_cast<size_t>(object["d"]["heartbeat_interval"]);
+		this->_hbInfos._heartbeatInterval = object["d"]["heartbeat_interval"].get<size_t>();
 		this->logger.debug("Default heartbeat interval is " + std::to_string(this->_hbInfos._heartbeatInterval));
 		this->logger.debug("Sending Identify event");
 		this->_identify();
 		this->logger.debug("Setting heartbeating thread");
-		this->_hbInfos._heartbeatThread = std::thread{[this]() { this->_heartbeatLoop(); }};
+		if (!this->_hbInfos._heartbeatThread.joinable())
+			this->_hbInfos._heartbeatThread = std::thread{[this]() {
+				try {
+					this->_heartbeatLoop();
+				} catch (std::exception &e) {
+					#ifdef __GNUG__
+					this->logger.critical("Caught exception in hearbeat loop: " + getLastExceptionName() + ": " + e.what());
+					#else
+					this->logger.critical("Caught exception in hearbeat loop: " + e.what());
+					#endif
+					pcall(this->disconnect);
+					this->_disconnected = true;
+					this->_running = false;
+				}
+			}};
 	}
 
 	void Client::_heartbeatLoop()
@@ -431,6 +500,8 @@ namespace DisCXXord
 			else
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
+		while (this->_reconnecting)
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		while (!this->_disconnected && this->_webSocket.isOpen()) {
 			this->_heartbeat(true);
 			for (size_t i = 0; !this->_disconnected && this->_webSocket.isOpen() && i < this->_hbInfos._heartbeatInterval; i += 1000) {
@@ -439,6 +510,8 @@ namespace DisCXXord
 				else
 					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			}
+			while (this->_reconnecting)
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 	}
 
@@ -451,6 +524,7 @@ namespace DisCXXord
 	void Client::_ready(json &val)
 	{
 		this->_guilds = {};
+		this->_sessionId = val["session_id"];
 		for (auto &elem : val["guilds"])
 			this->_guilds.emplace_back(elem["id"]);
 		if (this->_handlers.ready)

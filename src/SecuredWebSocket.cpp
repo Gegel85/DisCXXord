@@ -19,7 +19,7 @@ namespace DisCXXord
 		"No Status Rcvd",
 		"Abnormal Closure",
 		"Invalid frame payload data",
-		"Policy Violatio",
+		"Policy Violation",
 		"Message Too Big",
 		"Mandatory Ext",
 		"Internal Server Error",
